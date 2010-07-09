@@ -18,13 +18,13 @@
   (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
     (is (= (error-message-on record :name) "can't be blank"))))
 
-(deftest test-valid-email?
+(deftest test-email?
   (are [address]
-    (is (valid-email? address))
+    (is (email? address))
     "info@domain.com"
     "first.last@domain.com")
   (are [address]
-    (is (not (valid-email? address)))
+    (is (not (email? address)))
     nil
     ""
     "root"
