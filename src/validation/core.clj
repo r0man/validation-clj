@@ -27,15 +27,19 @@
   [record attribute message]  
   (with-meta record
     (assoc-in (meta record) [:errors attribute]
-              (conj (error-messages-on record attribute) message))))
+              (seq (set (conj (error-messages-on record attribute) message))))))
 
 (defn email?
   "Returns true if the email address is valid, otherwise false."
   [address] (and address (re-matches *email-regex* address)))
 
-;; (defn validate-email [record attribute & options]
-;;   (if-not (re-matches *email-regex* (attribute record))
-;;     *email-error*))
+(defn validate-email [record attribute & options]
+  (let [options (apply hash-map options)]
+    (if (email? (attribute record))
+      record
+      (add-error-message-on
+       record attribute
+       (or (:message options) "must be an email address.")))))
 
 (defn validate-presence-of
   "Validates that the specified attribute is not blank."
