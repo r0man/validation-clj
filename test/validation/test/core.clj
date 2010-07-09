@@ -5,6 +5,11 @@
   (let [record (add-error-message-on {:email "bob"} :email "is not a valid email address.")]
     (is (= (meta record) {:errors {:email ["is not a valid email address."]}}))))
 
+(deftest test-error-messages
+  (let [messages {:name ["can't be blank"]}
+        record (with-meta {:name ""} {:errors messages})]
+    (is (= (error-messages record) messages))))
+
 (deftest test-error-messages-on
   (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
     (is (= (error-messages-on record :name) ["can't be blank"]))))

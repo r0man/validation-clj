@@ -10,9 +10,13 @@
   #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
   "The regualar expression used to validate email addresses.")
 
+(defn error-messages
+  "Returns all error messages of the record."
+  [record] (:errors (meta record)))
+
 (defn error-messages-on
   "Returns all error messages of the record for the attribute."
-  [record attribute] (attribute (:errors (meta record))))
+  [record attribute] (attribute (error-messages record)))
 
 (defn error-message-on
   "Returns the first error message of the record for the attribute."
