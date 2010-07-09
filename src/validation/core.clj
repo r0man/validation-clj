@@ -9,8 +9,9 @@
   #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
   "The regualar expression used to validate email addresses.")
 
-(defn valid-email? [address]
-  (and address (re-matches *email-regex* address)))
+(defn valid-email?
+  "Returns true if the email address is valid, otherwise false."
+  [address] (and address (re-matches *email-regex* address)))
 
 ;; (defn validate-email [record attribute & options]
 ;;   (if-not (re-matches *email-regex* (attribute record))
