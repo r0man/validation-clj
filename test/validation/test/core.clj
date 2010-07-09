@@ -10,4 +10,23 @@
     (is (not (valid-email? address)))
     nil
     ""
-    "root@localhost"))
+    "root"
+    "@localhost"
+    "root@localhost"
+    "domain.com"
+    "@domain.com"))
+
+(deftest test-validate-presence-of  
+  (let [result (validate-presence-of {:name "Bob"} :name)]
+    (is (nil? (meta result))))
+  (let [result (validate-presence-of {:name ""} :name)]
+    ;; (println (meta result))
+    (is (= (meta result) {:errors {:name "can't be blank."}}))))
+
+(deftest test-error-messages-on
+  (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
+    (is (= (error-messages-on record :name) ["can't be blank"]))))
+
+(deftest test-error-message-on
+  (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
+    (is (= (error-message-on record :name) "can't be blank"))))
