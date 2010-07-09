@@ -42,17 +42,6 @@
   [record attribute & options]
   (let [options (apply hash-map options)]
     (if (blank? (attribute record))
-      (with-meta record
-        (let [errors (:errors (meta record))]
-          (assoc (meta record) :errors (assoc errors attribute
-                                              (or (:message options) "can't be blank.")))))
-      record)))
-
-(defn validate-presence-of
-  "Validates that the specified attribute is not blank."
-  [record attribute & options]
-  (let [options (apply hash-map options)]
-    (if (blank? (attribute record))
       (add-error-message-on
        record attribute
        (or (:message options) "can't be blank."))
