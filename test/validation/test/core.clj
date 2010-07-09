@@ -1,6 +1,18 @@
 (ns validation.test.core
   (:use clojure.test validation.core))
 
+(deftest test-add-error-message-on
+  (let [record (add-error-message-on {:email "bob"} :email "is not a valid email address.")]
+    (is (= (meta record) {:errors {:email ["is not a valid email address."]}}))))
+
+(deftest test-error-messages-on
+  (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
+    (is (= (error-messages-on record :name) ["can't be blank"]))))
+
+(deftest test-error-message-on
+  (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
+    (is (= (error-message-on record :name) "can't be blank"))))
+
 (deftest test-valid-email?
   (are [address]
     (is (valid-email? address))
@@ -23,10 +35,3 @@
     ;; (println (meta result))
     (is (= (meta result) {:errors {:name "can't be blank."}}))))
 
-(deftest test-error-messages-on
-  (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
-    (is (= (error-messages-on record :name) ["can't be blank"]))))
-
-(deftest test-error-message-on
-  (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
-    (is (= (error-message-on record :name) "can't be blank"))))
