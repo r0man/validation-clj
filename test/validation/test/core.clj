@@ -3,7 +3,7 @@
 
 (deftest test-add-error-message-on
   (let [record (add-error-message-on {:email "bob"} :email "is not a valid email address.")]
-    (is (= (meta record) {:errors {:email ["is not a valid email address."]}}))))
+    (is (= (error-messages-on record :email) ["is not a valid email address."]))))
 
 (deftest test-error-messages
   (let [messages {:name ["can't be blank"]}
@@ -37,6 +37,5 @@
   (let [result (validate-presence-of {:name "Bob"} :name)]
     (is (nil? (meta result))))
   (let [result (validate-presence-of {:name ""} :name)]
-    ;; (println (meta result))
-    (is (= (meta result) {:errors {:name "can't be blank."}}))))
+    (is (= (error-messages-on result :name) ["can't be blank."]))))
 

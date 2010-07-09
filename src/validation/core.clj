@@ -48,6 +48,14 @@
                                               (or (:message options) "can't be blank.")))))
       record)))
 
+(defn validate-presence-of
+  "Validates that the specified attribute is not blank."
+  [record attribute & options]
+  (let [options (apply hash-map options)]
+    (if (blank? (attribute record))
+      (add-error-message-on record attribute "can't be blank.")
+      record)))
+
 
 ;; (conj nil 1)
 ;; (meta (add-error-message-on {:email "bob"} :email "is not a valid email address."))
