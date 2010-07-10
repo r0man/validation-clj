@@ -23,7 +23,8 @@
   "Returns a validation fn that checks if the specified attribute is
   an email address."
   [attribute & options]
-  (let [options (apply hash-map options) message (or (:message options) "must be an email.")]
+  (let [options (apply hash-map options)
+        message (or (:message options) "must be an email.")]
     (fn [record]
       (let [value (attribute record)]
         (cond
@@ -35,7 +36,8 @@
   "Returns a validation fn that checks if the specified attribute is
   not blank."
   [attribute & options]
-  (let [options (apply hash-map options) message (or (:message options) "can't be blank.")]
+  (let [options (apply hash-map options)
+        message (or (:message options) "can't be blank.")]
     (fn [record]
       (if (blank? (attribute record))
         (add-error-message-on record attribute message)
