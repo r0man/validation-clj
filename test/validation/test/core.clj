@@ -27,6 +27,11 @@
     (is empty? (error-messages-on (validator *user*) :email))
     (is (= (error-messages-on (validator (assoc *user* :email nil)) :email) errors))
     (is (= (error-messages-on (validator (assoc *user* :email "")) :email) errors))
+    (is (= (error-messages-on (validator (assoc *user* :email "root")) :email) errors)))
+  (let [validator (validate-email :email :allow-blank true) errors ["must be an email."]]
+    (is empty? (error-messages-on (validator *user*) :email))
+    (is (empty? (error-messages-on (validator (assoc *user* :email nil)) :email)))
+    (is (empty? (error-messages-on (validator (assoc *user* :email "")) :email)))
     (is (= (error-messages-on (validator (assoc *user* :email "root")) :email) errors))))
 
 (deftest test-validate-presence-of

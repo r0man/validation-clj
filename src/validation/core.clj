@@ -25,8 +25,11 @@
   [attribute & options]
   (let [options (apply hash-map options) message (or (:message options) "must be an email.")]
     (fn [record]
-      (if (or (:allow-blank options) (email? (attribute record)))
-        record (add-error-message-on record attribute message)))))
+      (let [value (attribute record)]
+        (cond
+         (and (:allow-blank options) (blank? value)) record
+         (email? value) record
+         :else (add-error-message-on record attribute message))))))
 
 (defn validate-presence-of
   "Returns a validation fn that checks if the specified attribute is
