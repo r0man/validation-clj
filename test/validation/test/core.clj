@@ -24,6 +24,15 @@
     "domain.com"
     "@domain.com"))
 
+(deftest test-validate-acceptance-of
+  (let [validator (validate-acceptance-of :terms-of-service) errors ["must be accepted."]]
+    (are [value]
+      (is empty? (error-messages-on (validator (assoc *user* :terms-of-service value)) :password))
+      "1")
+    (are [value]
+      (is (= (error-messages-on (validator (assoc *user* :terms-of-service value)) :terms-of-service) errors))
+      nil "" "0")))
+
 (deftest test-validate-confirmation-of
   (let [validator (validate-confirmation-of :password :password-confirmation) errors ["doesn’t match confirmation."]]
     (are [value]

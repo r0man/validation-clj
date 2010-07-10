@@ -25,6 +25,17 @@
   "Returns true if the email address is valid, otherwise false."
   [address] (and address (re-matches *email-regex* address)))
 
+(defn validate-acceptance-of
+  "Returns a validation function that checks if the attribute was
+  accepted, e.g. the terms of service."
+  [attribute & options]
+  (let [options (apply hash-map options)
+        message (extract-message options "must be accepted.")]
+    (fn [record]
+      (if (= (attribute record) "1")
+        record
+        (add-error-message-on record attribute message)))))
+
 (defn validate-confirmation-of
   "Returns a validation function that checks if the first attribute is
   equal to the second attribute."
