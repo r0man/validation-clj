@@ -48,14 +48,15 @@
     "@domain.com"))
 
 (deftest test-validate-email
-  (let [result (validate-presence-of {:name "Bob"} :name)]
-    (is (nil? (meta result))))
-  (let [result (validate-presence-of {:name ""} :name)]
-    (is (= (error-messages-on result :name) ["can't be blank."]))))
+  (let [validator (validate-email :email) errors ["must be an email."]]
+    (is empty? (error-messages-on (validator *user*) :email))
+    (is (= (error-messages-on (validator (assoc *user* :email nil)) :email) errors))
+    (is (= (error-messages-on (validator (assoc *user* :email "")) :email) errors))
+    (is (= (error-messages-on (validator (assoc *user* :email "root")) :email) errors))))
 
-(deftest test-validate-presence-of  
-  (let [result (validate-presence-of {:name "Bob"} :name)]
-    (is (nil? (meta result))))
-  (let [result (validate-presence-of {:name ""} :name)]
-    (is (= (error-messages-on result :name) ["can't be blank."]))))
+(deftest test-validate-presence-of
+  (let [validator (validate-presence-of :name) errors ["can't be blank."]]
+    (is empty? (error-messages-on (validator *user*) :name))
+    (is (= (error-messages-on (validator (assoc *user* :name nil)) :name) errors))
+    (is (= (error-messages-on (validator (assoc *user* :name "")) :name) errors))))
 
