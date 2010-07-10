@@ -73,6 +73,19 @@
          (includes? values value) (add-error-message-on record attribute message)
          :else record)))))
 
+(defn validate-format-of
+  "Returns a validation fn that checks if the specified attribute
+  matches the pattern."
+  [attribute pattern & options]
+  (let [options (apply hash-map options)
+        message (extract-message options "is invalid.")]
+    (fn [record]
+      (let [value (attribute record)]
+        (cond
+         (and (:allow-blank options) (blank? value)) record
+         (and value (re-matches pattern value)) record
+         :else (add-error-message-on record attribute message))))))
+
 (defn validate-inclusion-of
   "Returns a validation fn that checks if the specified attribute is
   included in the sequence of values."

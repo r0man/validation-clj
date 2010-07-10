@@ -87,6 +87,15 @@
       (is (= (error-messages-on (validator (assoc *user* :nick value)) :nick) errors))
       "admin" "root")))
 
+(deftest test-validate-format-of
+  (let [validator (validate-format-of :nick #"(?i)[a-z0-9]+") errors ["is invalid."]]
+    (are [value]
+      (is empty? (error-messages-on (validator (assoc *user* :nick value)) :nick))
+      "roman" "r0man")
+    (are [value]
+      (is (= (error-messages-on (validator (assoc *user* :nick value)) :nick) errors))
+      nil "" "invalid!")))
+
 (deftest test-validate-inclusion-of-with-vector
   (let [validator (validate-inclusion-of :gender ["m" "f"]) errors ["is not included in the list."]]
     (are [value]
