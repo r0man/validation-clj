@@ -25,6 +25,17 @@
   "Returns true if the email address is valid, otherwise false."
   [address] (and address (re-matches *email-regex* address)))
 
+(defn validate-confirmation-of
+  "Returns a validation function that checks if the first attribute is
+  equal to the second attribute."
+  [attribute-1 attribute-2 & options]
+  (let [options (apply hash-map options)
+        message (extract-message options "doesn’t match confirmation.")]
+    (fn [record]      
+      (cond
+       (= (attribute-1 record) (attribute-2 record)) record
+       :else (add-error-message-on record attribute-1 message)))))
+
 (defn validate-email
   "Returns a validation fn that checks if the specified attribute is
   an email address."
@@ -63,8 +74,6 @@
          (and (:allow-blank options) (blank? value)) record
          (includes? values value) record
          :else (add-error-message-on record attribute message))))))
-
-(validate-inclusion-of :gender ["m" "f"])
 
 (defn validate-presence-of
   "Returns a validation fn that checks if the specified attribute is

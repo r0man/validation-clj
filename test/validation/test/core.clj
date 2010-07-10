@@ -7,8 +7,7 @@
       :email "roman.scherer@burningswell.com"
       :age 30
       :gender "m"
-      :password "secret"
-      :password-confirmation "secret"})
+      :password "secret"})
 
 (deftest test-email?
   (are [address]
@@ -24,6 +23,15 @@
     "root@localhost"
     "domain.com"
     "@domain.com"))
+
+(deftest test-validate-confirmation-of
+  (let [validator (validate-confirmation-of :password :password-confirmation) errors ["doesn’t match confirmation."]]
+    (are [value]
+      (is empty? (error-messages-on (validator (assoc *user* :password-confirmation value)) :password))
+      (:password *user*))
+    (are [value]
+      (is (= (error-messages-on (validator (assoc *user* :password-confirmation value)) :password) errors))
+      nil "" "invalid")))
 
 (deftest test-validate-email
   (let [validator (validate-email :email) errors ["must be an email."]]
