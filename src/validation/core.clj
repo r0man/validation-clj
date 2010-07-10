@@ -1,11 +1,17 @@
 (ns validation.core
   (:use [clojure.contrib.def :only (defvar)]
         [clojure.contrib.string :only (blank?)]
+        [clojure.contrib.seq :only (includes?)]
         validation.errors))
 
 ;; (defprotocol Validation
 ;;   (validate [record] "Validate the record.")
-;;   (valid?   [record] "Returns true if the record is valid, otherwise false."))
+;;   (valid?   [record] "Returns true if the record is valid,
+;;   otherwise false."))
+
+(defn- extract-message
+  "Extract the message from the options, or return the default."
+  [options & [default]] (or (:message options) default))
 
 (defvar *email-error*
   "Invalid email address."
@@ -24,7 +30,7 @@
   an email address."
   [attribute & options]
   (let [options (apply hash-map options)
-        message (or (:message options) "must be an email.")]
+        message (extract-message options "must be an email.")]
     (fn [record]
       (let [value (attribute record)]
         (cond
@@ -32,12 +38,26 @@
          (email? value) record
          :else (add-error-message-on record attribute message))))))
 
+(defn validate-inclusion-of
+  "Returns a validation fn that checks if the specified attribute is
+  included in the sequence specified by the :in option."
+  [attribute & options]
+  (let [options (apply hash-map options)
+        message (extract-message options "is not included in the list.")
+        values (:in options)]
+    (fn [record]
+      (let [value (attribute record)]
+        (cond
+         (and (:allow-blank options) (blank? value)) record
+         (includes? values value) record
+         :else (add-error-message-on record attribute message))))))
+
 (defn validate-presence-of
   "Returns a validation fn that checks if the specified attribute is
   not blank."
   [attribute & options]
   (let [options (apply hash-map options)
-        message (or (:message options) "can't be blank.")]
+        message (extract-message options "can't be blank.")]
     (fn [record]
       (if (blank? (attribute record))
         (add-error-message-on record attribute message)
