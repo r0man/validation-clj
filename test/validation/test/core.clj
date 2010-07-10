@@ -3,6 +3,7 @@
 
 (def *user*
      {:name "Roman Scherer"
+      :nick "roman"
       :email "roman.scherer@burningswell.com"
       :age 30
       :gender "m"
@@ -41,6 +42,33 @@
     (are [value]
       (is (= (error-messages-on (validator (assoc *user* :email value)) :email) errors))
       "root")))
+
+(deftest test-validate-exclusion-of-with-vector
+  (let [validator (validate-exclusion-of :nick ["admin" "root"]) errors ["is reserved."]]
+    (are [value]
+      (is empty? (error-messages-on (validator (assoc *user* :nick value)) :nick))
+      "alice" "bob")
+    (are [value]
+      (is (= (error-messages-on (validator (assoc *user* :nick value)) :nick) errors))
+      "admin" "root")))
+
+(deftest test-validate-exclusion-of-with-range
+  (let [validator (validate-exclusion-of :age (range 0 18)) errors ["is reserved."]]
+    (are [value]
+      (is empty? (error-messages-on (validator (assoc *user* :age value)) :age))
+      -1 18)
+    (are [value]
+      (is (= (error-messages-on (validator (assoc *user* :age value)) :age) errors))
+      0 17)))
+
+(deftest test-validate-exclusion-of-with-allow-blank
+  (let [validator (validate-exclusion-of :nick ["admin" "root"] :allow-blank true) errors ["is reserved."]]
+    (are [value]
+      (is empty? (error-messages-on (validator (assoc *user* :nick value)) :nick))
+      nil "" "alice" "bob")
+    (are [value]
+      (is (= (error-messages-on (validator (assoc *user* :nick value)) :nick) errors))
+      "admin" "root")))
 
 (deftest test-validate-inclusion-of-with-vector
   (let [validator (validate-inclusion-of :gender ["m" "f"]) errors ["is not included in the list."]]

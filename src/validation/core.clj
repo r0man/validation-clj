@@ -40,7 +40,7 @@
 
 (defn validate-exclusion-of
   "Returns a validation fn that checks if the specified attribute is
-  not included in the sequence."
+  not included in the sequence of values."
   [attribute values & options]
   (let [options (apply hash-map options)
         message (extract-message options "is reserved.")]
@@ -48,12 +48,12 @@
       (let [value (attribute record)]
         (cond
          (and (:allow-blank options) (blank? value)) record
-         (includes? values value) record
-         :else (add-error-message-on record attribute message))))))
+         (includes? values value) (add-error-message-on record attribute message)
+         :else record)))))
 
 (defn validate-inclusion-of
   "Returns a validation fn that checks if the specified attribute is
-  included in the sequence.."
+  included in the sequence of values."
   [attribute values & options]
   (let [options (apply hash-map options)
         message (extract-message options "is not included in the list.")]
