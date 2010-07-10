@@ -38,19 +38,33 @@
          (email? value) record
          :else (add-error-message-on record attribute message))))))
 
-(defn validate-inclusion-of
+(defn validate-exclusion-of
   "Returns a validation fn that checks if the specified attribute is
-  included in the sequence specified by the :in option."
-  [attribute & options]
+  not included in the sequence."
+  [attribute values & options]
   (let [options (apply hash-map options)
-        message (extract-message options "is not included in the list.")
-        values (:in options)]
+        message (extract-message options "is reserved.")]
     (fn [record]
       (let [value (attribute record)]
         (cond
          (and (:allow-blank options) (blank? value)) record
          (includes? values value) record
          :else (add-error-message-on record attribute message))))))
+
+(defn validate-inclusion-of
+  "Returns a validation fn that checks if the specified attribute is
+  included in the sequence.."
+  [attribute values & options]
+  (let [options (apply hash-map options)
+        message (extract-message options "is not included in the list.")]
+    (fn [record]
+      (let [value (attribute record)]
+        (cond
+         (and (:allow-blank options) (blank? value)) record
+         (includes? values value) record
+         :else (add-error-message-on record attribute message))))))
+
+(validate-inclusion-of :gender ["m" "f"])
 
 (defn validate-presence-of
   "Returns a validation fn that checks if the specified attribute is
