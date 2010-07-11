@@ -3,16 +3,6 @@
 
 (refer-private 'validation.core)
 
-(deftest test-email?
-  (testing "valid email address"
-    (are [address]
-      (is (email? address))
-      "info@domain.com" "first.last@domain.com"))
-  (testing "invalid email address"
-    (are [address]
-      (is (not (email? address)))
-      nil "" "root" "@localhost" "root@localhost" "domain.com" "@domain.com")))
-
 (deftest test-validate-acceptance
   (testing "accepted attribute"
     (are [value]
