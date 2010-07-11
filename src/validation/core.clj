@@ -89,3 +89,20 @@ characters."
   []
   (not (blank? value))
   "can't be blank.")
+
+;; (defn validate-user [user]
+;;   (-> user
+;;       (validate-presence :nick)
+;;       (validate-min-length :nick 2)
+;;       (validate-max-length :nick 16)
+;;       (validate-presence :email)
+;;       (validate-email :email)
+;;       (validate-presence :password)
+;;       (validate-confirmation :password)))
+
+;; (error-messages
+;;  (validate-user
+;;   {:nick "roman"
+;;    :email "roman@burningswell.com"
+;;    :password "secret"
+;;    :password-confirmation "secret"}))

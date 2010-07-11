@@ -22,7 +22,7 @@
     (are [value]
       (let [record (validate-confirmation {:password "secret" :password-confirmation value} :password)]
         (is (not (valid? record)))
-        (is (= (error-messages-on record :password) ["doesn’t match confirmation."])))
+        (is (= (error-messages-on record :password) ["doesn't match confirmation."])))
       nil "" "invalid")))
 
 (deftest test-validate-email
@@ -84,7 +84,7 @@
       "m" "f"))
   (testing "invalid attribute"
     (are [value]
-      (let [record (validate-inclusion {:gender value} :gender ["admin" "root"])]
+      (let [record (validate-inclusion {:gender value} :gender ["m" "f"])]
         (is (not (valid? record)))
         (is (= (error-messages-on record :gender) ["is not a valid option."])))
       nil "" "x")))
