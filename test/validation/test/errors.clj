@@ -14,7 +14,12 @@
     (is (= (-> *user*
                (add-error-message-on :email message)
                (add-error-message-on :email message))
-           (add-error-message-on *user* :email message)))))
+           (add-error-message-on *user* :email message)))
+    (is (= (error-messages
+            (-> *user*
+                (add-error-message-on :email "can't be blank.")
+                (add-error-message-on :email "must be a valid email address.")))
+           {:email ["can't be blank." "must be a valid email address."]}))))
 
 (deftest test-error-messages
   (is (= (error-messages *user*) nil))
