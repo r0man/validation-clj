@@ -35,7 +35,7 @@
   confirmation attribute."
   []
   (= value ((confirmation-attribute attribute) record))
-  "doesn’t match confirmation.")
+  "doesn't match confirmation.")
 
 (defvalidation validate-email 
   "Validates that the record's attribute is a valid email address."
@@ -74,7 +74,7 @@
   "Validates that the record's attribute is not longer than maximum
   number of characters."
   [maximum]
-  (< (count value) maximum)
+  (<= (count value) maximum)
   (format "is too long (maximum is %d characters)." maximum))
 
 (defvalidation validate-min-length 

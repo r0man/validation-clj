@@ -99,7 +99,7 @@
       (let [record (validate-max-length {:nick value} :nick 5)]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["is too long (maximum is 5 characters)."])))
-      "12345" "123456")))
+      "123456")))
 
 (deftest test-validate-min-length
   (testing "valid attribute"
