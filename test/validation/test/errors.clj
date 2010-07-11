@@ -2,8 +2,8 @@
   (:use clojure.test validation.errors))
 
 (def *user*
-     {:name "Roman Scherer"
-      :email "roman.scherer@burningswell.com"
+     {:name "Bob"
+      :email "bob@example.com"
       :password "secret"
       :password-confirmation "secret"})
 
@@ -31,3 +31,8 @@
   (is (= (error-message-on *user* :email) nil))
   (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
     (is (= (error-message-on record :name) "can't be blank"))))
+
+(deftest test-valid?
+  (is (valid? {}))
+  (is (valid? (with-meta {} {:errors {}})))
+  (is (not (valid? (with-meta {} {:errors {:name ["can't be blank."]}})))))

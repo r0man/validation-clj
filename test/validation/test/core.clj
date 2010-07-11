@@ -1,132 +1,136 @@
 (ns validation.test.core
-  (:use clojure.test validation.core validation.errors))
+  (:use clojure.test validation.core validation.errors validation.test))
 
-(def *user*
-     {:name "Roman Scherer"
-      :nick "roman"
-      :email "roman.scherer@burningswell.com"
-      :age 30
-      :gender "m"
-      :password "secret"})
+(refer-private 'validation.core)
 
 (deftest test-email?
-  (are [address]
-    (is (email? address))
-    "info@domain.com"
-    "first.last@domain.com")
-  (are [address]
-    (is (not (email? address)))
-    nil
-    ""
-    "root"
-    "@localhost"
-    "root@localhost"
-    "domain.com"
-    "@domain.com"))
+  (testing "valid email address"
+    (are [address]
+      (is (email? address))
+      "info@domain.com" "first.last@domain.com"))
+  (testing "invalid email address"
+    (are [address]
+      (is (not (email? address)))
+      nil "" "root" "@localhost" "root@localhost" "domain.com" "@domain.com")))
 
-(deftest test-validate-acceptance-of
-  (let [validator (validate-acceptance-of :terms-of-service) errors ["must be accepted."]]
+(deftest test-validate-acceptance
+  (testing "accepted attribute"
     (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :terms-of-service value)) :password))
-      "1")
+      (is (valid? (validate-acceptance {:tos value} :tos)))
+      "1"))
+  (testing "not accepted attribute"
     (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :terms-of-service value)) :terms-of-service) errors))
+      (let [record (validate-acceptance {:tos value} :tos)]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :tos) ["must be accepted."])))
       nil "" "0")))
 
-(deftest test-validate-confirmation-of
-  (let [validator (validate-confirmation-of :password :password-confirmation) errors ["doesn’t match confirmation."]]
+(deftest test-validate-confirmation
+  (testing "valid attribute"
+    (is (valid? (validate-confirmation {:password "secret" :password-confirmation "secret"} :password))))
+  (testing "invalid attribute"
     (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :password-confirmation value)) :password))
-      (:password *user*))
-    (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :password-confirmation value)) :password) errors))
+      (let [record (validate-confirmation {:password "secret" :password-confirmation value} :password)]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :password) ["doesn’t match confirmation."])))
       nil "" "invalid")))
 
 (deftest test-validate-email
-  (let [validator (validate-email :email) errors ["must be an email."]]
+  (testing "valid email address"
     (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :email value)) :email))
-      (:email *user*))
+      (is (valid? (validate-email {:email value} :email)))
+      "info@domain.com" "first.last@sub.domain.com"))
+  (testing "invalid email address"
     (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :email value)) :email) errors))
-      nil "" "root")))
+      (let [record (validate-email {:email value} :email)]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :email) ["is not a valid email address."])))
+      nil "" "root" "root@localhost")))
 
-(deftest test-validate-email-with-allow-blank
-  (let [validator (validate-email :email :allow-blank true) errors ["must be an email."]]
+(deftest test-validate-exact-length
+  (testing "valid attribute"
     (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :email value)) :email))
-      (:email *user*) nil "")
+      (is (valid? (validate-exact-length {:country value} :country :is 2)))
+      "de" "es"))
+  (testing "invalid attribute"
     (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :email value)) :email) errors))
-      "root")))
+      (let [record (validate-exact-length {:country value} :country :is 2)]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :country) ["has the wrong length (should be 2 characters)."])))
+      nil "" "deu" "esp")))
 
-(deftest test-validate-exclusion-of-with-vector
-  (let [validator (validate-exclusion-of :nick ["admin" "root"]) errors ["is reserved."]]
+(deftest test-confirmation-attribute
+  (is (= (confirmation-attribute "password") :password-confirmation))
+  (is (= (confirmation-attribute :password) :password-confirmation)))
+
+(deftest test-validate-exclusion
+  (testing "valid attribute"
     (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :nick value)) :nick))
-      "alice" "bob")
+      (is (valid? (validate-exclusion {:nick value} :nick :in ["admin" "root"])))
+      nil "" "test"))
+  (testing "invalid attribute"
     (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :nick value)) :nick) errors))
+      (let [record (validate-exclusion {:nick value} :nick :in ["admin" "root"])]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :nick) ["is reserved."])))
       "admin" "root")))
 
-(deftest test-validate-exclusion-of-with-range
-  (let [validator (validate-exclusion-of :age (range 0 18)) errors ["is reserved."]]
+(deftest test-validate-format
+  (testing "valid attribute"
     (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :age value)) :age))
-      -1 18)
+      (is (valid? (validate-format {:nick value} :nick :with #"(?i)[a-z0-9]+")))
+      "nick" "n1ck" ))
+  (testing "invalid attribute"
     (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :age value)) :age) errors))
-      0 17)))
+      (let [record (validate-format {:nick value} :nick :with #"(?i)[a-z0-9]+")]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :nick) ["is invalid."])))
+      nil "" "!" "\"" "§" "$" "%" "&" "/" "(" ")" "=" "?" "`" "´")))
 
-(deftest test-validate-exclusion-of-with-allow-blank
-  (let [validator (validate-exclusion-of :nick ["admin" "root"] :allow-blank true) errors ["is reserved."]]
+(deftest test-validate-inclusion
+  (testing "valid attribute"
     (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :nick value)) :nick))
-      nil "" "alice" "bob")
+      (is (valid? (validate-inclusion {:gender value} :gender :in ["m" "f"])))
+      "m" "f"))
+  (testing "invalid attribute"
     (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :nick value)) :nick) errors))
-      "admin" "root")))
-
-(deftest test-validate-format-of
-  (let [validator (validate-format-of :nick #"(?i)[a-z0-9]+") errors ["is invalid."]]
-    (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :nick value)) :nick))
-      "roman" "r0man")
-    (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :nick value)) :nick) errors))
-      nil "" "invalid!")))
-
-(deftest test-validate-inclusion-of-with-vector
-  (let [validator (validate-inclusion-of :gender ["m" "f"]) errors ["is not included in the list."]]
-    (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :gender value)) :gender))
-      "m" "f")
-    (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :gender value)) :gender) errors))
+      (let [record (validate-inclusion {:gender value} :gender :in ["admin" "root"])]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :gender) ["is not a valid option."])))
       nil "" "x")))
 
-(deftest test-validate-inclusion-of-with-range
-  (let [validator (validate-inclusion-of :age (range 0 120)) errors ["is not included in the list."]]
+(deftest test-validate-max-length
+  (testing "valid attribute"
     (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :gender value)) :gender))
-      0 1 119 120)
+      (is (valid? (validate-max-length {:nick value} :nick :maximum 5)))
+      nil "" "1" "12" "123" "1234" "1234"))
+  (testing "invalid attribute"
     (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :age value)) :age) errors))
-      nil "" -1 121)))
+      (let [record (validate-max-length {:nick value} :nick :maximum 5)]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :nick) ["is too long (maximum is 5 characters)."])))
+      "12345" "123456")))
 
-(deftest test-validate-inclusion-of-with-allow-blank
-  (let [validator (validate-inclusion-of :gender ["m" "f"] :allow-blank true) errors ["is not included in the list."]]
+(deftest test-validate-min-length
+  (testing "valid attribute"
     (are [value]
-      (is empty? (error-messages-on (validator (assoc *user* :gender value)) :gender))
-      nil "" "m" "f")
+      (is (valid? (validate-min-length {:nick value} :nick :minimum 2)))
+      "12" "123" "1234" "1234"))
+  (testing "invalid attribute"
     (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :gender value)) :gender) errors))
-      "x")))
+      (let [record (validate-min-length {:nick value} :nick :minimum 2)]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :nick) ["is too short (minimum is 2 characters)."])))
+      nil "" "1")))
 
-(deftest test-validate-presence-of
-  (let [validator (validate-presence-of :name) errors ["can't be blank."]]
-    (is empty? (error-messages-on (validator *user*) :name))
+(deftest test-validate-presence
+  (testing "valid attribute"
     (are [value]
-      (is (= (error-messages-on (validator (assoc *user* :name value)) :name) errors))
+      (is (valid? (validate-presence {:nick value} :nick)))
+      "x" "root"))
+  (testing "invalid attribute"
+    (are [value]
+      (let [record (validate-presence {:nick value} :nick)]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :nick) ["can't be blank."])))
       nil "")))
-

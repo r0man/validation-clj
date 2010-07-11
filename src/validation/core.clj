@@ -1,17 +1,9 @@
 (ns validation.core
+  (:import (java.util Formatter))
   (:use [clojure.contrib.def :only (defvar)]
-        [clojure.contrib.string :only (blank?)]
+        [clojure.contrib.string :only (blank? replace-re)]
         [clojure.contrib.seq :only (includes?)]
         validation.errors))
-
-;; (defprotocol Validation
-;;   (validate [record] "Validate the record.")
-;;   (valid?   [record] "Returns true if the record is valid,
-;;   otherwise false."))
-
-(defn- extract-message
-  "Extract the message from the options, or return the default."
-  [options & [default]] (or (:message options) default))
 
 (defvar *email-error*
   "Invalid email address."
@@ -25,107 +17,88 @@
   "Returns true if the email address is valid, otherwise false."
   [address] (and address (re-matches *email-regex* address)))
 
-(defn validate-acceptance-of
-  "Returns a validation function that checks if the attribute was
-  accepted, e.g. the terms of service."
-  [attribute & options]
-  (let [options (apply hash-map options)
-        message (extract-message options "must be accepted.")]
-    (fn [record]
-      (if (= (attribute record) "1")
-        record
-        (add-error-message-on record attribute message)))))
+(defn- confirmation-attribute
+  "Returns the keyword attribute used for confirmation."
+  [attribute] (keyword (replace-re #"^\:+" "" (str attribute "-confirmation"))))
 
-(defn validate-confirmation-of
-  "Returns a validation function that checks if the first attribute is
-  equal to the second attribute."
-  [attribute-1 attribute-2 & options]
-  (let [options (apply hash-map options)
-        message (extract-message options "doesn’t match confirmation.")]
-    (fn [record]      
-      (cond
-       (= (attribute-1 record) (attribute-2 record)) record
-       :else (add-error-message-on record attribute-1 message)))))
+(defn- extract-value
+  "Extract the value of the record's attribute."
+  [record attribute]
+  (if (vector? attribute)
+    (get-in record attribute)
+    (get record attribute)))
 
-(defn validate-email
-  "Returns a validation fn that checks if the specified attribute is
-  an email address."
-  [attribute & options]
-  (let [options (apply hash-map options)
-        message (extract-message options "must be an email.")]
-    (fn [record]
-      (let [value (attribute record)]
-        (cond
-         (and (:allow-blank options) (blank? value)) record
-         (email? value) record
-         :else (add-error-message-on record attribute message))))))
+(defmacro defvalidation [fn-name fn-doc arguments predicate-fn error-fn]
+  (let [[record# attribute# _ options#] arguments]
+    `(defn ~fn-name ~fn-doc [~record# ~attribute# & ~options#]
+       (let [~options# (apply hash-map ~options#)
+             ~'value (extract-value ~record# ~attribute#)]
+         (if ~predicate-fn
+           ~'record
+           (add-error-message-on ~'record ~'attribute ~error-fn))))))
 
-(defn validate-exclusion-of
-  "Returns a validation fn that checks if the specified attribute is
-  not included in the sequence of values."
-  [attribute values & options]
-  (let [options (apply hash-map options)
-        message (extract-message options "is reserved.")]
-    (fn [record]
-      (let [value (attribute record)]
-        (cond
-         (and (:allow-blank options) (blank? value)) record
-         (includes? values value) (add-error-message-on record attribute message)
-         :else record)))))
+(defvalidation validate-acceptance
+  "Validates that the record's attribute is accepted."
+  [record attribute & options]
+  (and value (= value "1"))
+  "must be accepted.")
 
-(defn validate-format-of
-  "Returns a validation fn that checks if the specified attribute
-  matches the pattern."
-  [attribute pattern & options]
-  (let [options (apply hash-map options)
-        message (extract-message options "is invalid.")]
-    (fn [record]
-      (let [value (attribute record)]
-        (cond
-         (and (:allow-blank options) (blank? value)) record
-         (and value (re-matches pattern value)) record
-         :else (add-error-message-on record attribute message))))))
+(defvalidation validate-confirmation
+  "Validates that the record's attribute is the same as the
+  confirmation attribute."
+  [record attribute & options]
+  (= value ((confirmation-attribute attribute) record))
+  "doesn’t match confirmation.")
 
-(defn validate-inclusion-of
-  "Returns a validation fn that checks if the specified attribute is
-  included in the sequence of values."
-  [attribute values & options]
-  (let [options (apply hash-map options)
-        message (extract-message options "is not included in the list.")]
-    (fn [record]
-      (let [value (attribute record)]
-        (cond
-         (and (:allow-blank options) (blank? value)) record
-         (includes? values value) record
-         :else (add-error-message-on record attribute message))))))
+(defvalidation validate-email 
+  "Validates that the record's attribute is a valid email address."
+  [record attribute & options]
+  (email? value)
+  "is not a valid email address.")
 
-(defn validate-presence-of
-  "Returns a validation fn that checks if the specified attribute is
-  not blank."
-  [attribute & options]
-  (let [options (apply hash-map options)
-        message (extract-message options "can't be blank.")]
-    (fn [record]
-      (if (blank? (attribute record))
-        (add-error-message-on record attribute message)
-        record))))
+(defvalidation validate-exact-length 
+  "Validates that the record's attribute is exactly length characters
+  long."
+  [record attribute & options]
+  (= (count value) (:is options))
+  (format "has the wrong length (should be %d characters)." (:is options)))
 
-;; (defn validate-length-of [record attribute & options]
-;;   (let [options (apply hash-map options)]
-;;     (if (email? (attribute record))
-;;       record
-;;       (add-error-message-on
-;;        record attribute
-;;        (or (:message options) "must be an email address.")))))
+(defvalidation validate-exclusion
+  "Validates that the record's attribute is not included in the
+  sequence of values."
+  [record attribute & options]
+  (not (includes? (:in options) value))
+  "is reserved.")
 
-;; (defn validate-numericality-of
-;;   "Validates whether the value of the specified attribute is numeric."
-;;   [record attribute & options]
-;;   )
+(defvalidation validate-format
+  "Validates that the record's attribute matches the pattern."
+  [record attribute & options]
+  (and value (re-matches (:with options) value))
+  "is invalid.")
 
-;; (defn validate-user [user]
-;;   (-> user
-;;       (validate-presence-of :name)
-;;       (validate-presence-of :email)
-;;       (validate-email :email)))
+(defvalidation validate-inclusion
+  "Validates that the record's attribute is not included in the
+  sequence of values."
+  [record attribute & options]
+  (includes? (:in options) value)
+  "is not a valid option.")
 
+(defvalidation validate-max-length 
+  "Validates that the record's attribute is not longer than maximum
+  number of characters."
+  [record attribute & options]
+  (< (count value) (:maximum options))
+  (format "is too long (maximum is %d characters)." (:maximum options)))
+
+(defvalidation validate-min-length 
+  "Validates that the record's attribute is at least minimum number of
+characters."
+  [record attribute & options]
+  (>= (count value) (:minimum options))
+  (format "is too short (minimum is %d characters)." (:minimum options)))
+
+(defvalidation validate-presence
+  "Validates that the record's attribute is not blank."
+  [record attribute & options]
+  (not (blank? value))
+  "can't be blank.")

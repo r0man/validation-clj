@@ -19,3 +19,8 @@
     (assoc-in (meta record) [:errors attribute]
               (seq (set (conj (error-messages-on record attribute) message))))))
 
+(defn valid?
+  "Returns tru if the record is valid, otherwise false."
+  [record]  
+  (let [errors (error-messages record)]
+    (or (nil? errors) (empty? errors))))
