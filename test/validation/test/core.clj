@@ -49,9 +49,9 @@
         (is (= (error-messages-on record :country) ["has the wrong length (should be 2 characters)."])))
       nil "" "deu" "esp")))
 
-(deftest test-confirmation-attribute
-  (is (= (confirmation-attribute "password") :password-confirmation))
-  (is (= (confirmation-attribute :password) :password-confirmation)))
+(deftest test-confirmation-keyword
+  (is (= (confirmation-keyword "password") :password-confirmation))
+  (is (= (confirmation-keyword :password) :password-confirmation)))
 
 (deftest test-validate-exclusion
   (testing "valid attribute"

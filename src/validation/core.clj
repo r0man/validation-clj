@@ -5,7 +5,7 @@
         validation.errors
         validation.predicates))
 
-(defn- confirmation-attribute
+(defn- confirmation-keyword
   "Returns the keyword attribute used for confirmation."
   [attribute] (keyword (replace-re #"^\:+" "" (str attribute "-confirmation"))))
 
@@ -34,7 +34,7 @@
   "Validates that the record's attribute is the same as the
   confirmation attribute."
   []
-  (= value ((confirmation-attribute attribute) record))
+  (= value ((confirmation-keyword attribute) record))
   "doesn't match confirmation.")
 
 (defvalidation validate-email 
