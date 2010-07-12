@@ -9,7 +9,7 @@
   "Returns the keyword attribute used for confirmation."
   [attribute] (keyword (replace-re #"^\:+" "" (str attribute "-confirmation"))))
 
-(defn- extract-value
+(defn extract-value
   "Extract the value of the record's attribute."
   [record attribute]
   (if (vector? attribute)
