@@ -1,7 +1,24 @@
 (ns validation.test.core
-  (:use clojure.test validation.core validation.errors validation.test))
+  (:use [clojure.contrib.error-kit :only (handle with-handler)]
+        clojure.test validation.core validation.errors validation.test))
 
 (refer-private 'validation.core)
+
+(defn validate-user [user]
+  (-> user
+      (validate-presence :nick)
+      (validate-min-length :nick 2)
+      (validate-max-length :nick 16)
+      (validate-presence :email)
+      (validate-email :email)
+      (validate-presence :password)
+      (validate-confirmation :password)))
+
+(def *valid-user*
+     {:nick "bob"
+      :email "bob@example.com"
+      :password "secret"
+      :password-confirmation "secret"})
 
 (deftest test-validate-acceptance
   (testing "accepted attribute"
@@ -124,3 +141,19 @@
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["can't be blank."])))
       nil "")))
+
+(deftest test-validate
+  (is (= (validate *valid-user* validate-user) *valid-user*))
+  (let [invalid-user (assoc *valid-user* :nick "" :email "bob")]
+    (is (thrown? IllegalArgumentException (validate invalid-user validate-user)))
+    (try
+      (validate invalid-user validate-user)
+      (catch IllegalArgumentException e
+        (is (= (.getMessage e)
+               (exception-message (validate-user invalid-user))))))
+    (with-handler
+      (validate invalid-user validate-user)
+      (handle *validation-error* [record]
+              (is (not (valid? record)))
+              (is (= (error-messages record)
+                     (error-messages (validate-user invalid-user))))))))

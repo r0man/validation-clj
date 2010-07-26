@@ -38,6 +38,10 @@
           errors))
     []))
 
+(defn exception-message [record]
+  (str "Validation error: " record "\n"
+       (join "\n" (map #(str " -  " %) (format-error-messages (error-messages record))))))
+
 (defn valid?
   "Returns tru if the record is valid, otherwise false."
   [record]  

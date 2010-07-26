@@ -1,9 +1,23 @@
 (ns validation.core
-  (:import (java.util Formatter))
-  (:use [clojure.contrib.string :only (blank? replace-re)]
+  (:use [clojure.contrib.string :only (blank? join replace-re)]
         [clojure.contrib.seq :only (includes?)]
+        [clojure.contrib.error-kit :only (deferror throw-msg raise)]
         validation.errors
         validation.predicates))
+
+(deferror *validation-error* [] [record]
+  {:msg (exception-message record)
+   :unhandled (throw-msg IllegalArgumentException)})
+
+(defn validate
+  "Validates the record by applying the validation-fn. The function
+  raises a *validation-error* if the record is invalid. If the record
+  is valid the function returns the record."
+  [record validation-fn]
+  (let [record (validation-fn record)]
+    (if-not (valid? record)
+      (raise *validation-error* record)
+      record)))
 
 (defn- confirmation-keyword
   "Returns the keyword attribute used for confirmation."
@@ -89,20 +103,3 @@ characters."
   []
   (not (blank? value))
   "can't be blank.")
-
-;; (defn validate-user [user]
-;;   (-> user
-;;       (validate-presence :nick)
-;;       (validate-min-length :nick 2)
-;;       (validate-max-length :nick 16)
-;;       (validate-presence :email)
-;;       (validate-email :email)
-;;       (validate-presence :password)
-;;       (validate-confirmation :password)))
-
-;; (error-messages
-;;  (validate-user
-;;   {:nick "roman"
-;;    :email "roman@burningswell.com"
-;;    :password "secret"
-;;    :password-confirmation "secret"}))
