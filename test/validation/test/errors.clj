@@ -45,8 +45,8 @@
          "Email is not a valid email address.")))
 
 (deftest test-format-error-messages
-  (is (nil? (format-error-messages nil)))
-  (is (nil? (format-error-messages {})))
+  (is (empty? (format-error-messages nil)))
+  (is (empty? (format-error-messages {})))
   (is (= (format-error-messages {:email ["is not a valid email address."] :nick ["can't be blank."]})
          ["Email is not a valid email address." "Nick can't be blank."])))
 

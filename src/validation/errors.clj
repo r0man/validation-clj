@@ -31,11 +31,12 @@
 (defn format-error-messages
   "Returns an array of formatted error messages."
   [errors]
-  (if (and errors (not (empty? errors)))
+  (if errors
     (flatten
      (map (fn [[attribute error-messages]]
             (map #(format-error-message attribute %) error-messages))
-          errors))))
+          errors))
+    []))
 
 (defn valid?
   "Returns tru if the record is valid, otherwise false."
