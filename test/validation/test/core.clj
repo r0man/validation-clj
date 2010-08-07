@@ -184,18 +184,21 @@
                ["must be between -180.0 and 180.0."])))
       nil "" -180.1 181 180.1 181)))
 
-;; (deftest test-validate-location
-;;   (testing "valid locations"
-;;     (are [location]
-;;       (is (valid? (validate-location {:location location} :location)))
-;;       {:latitude 0 :longitude 0}
-;;       {:latitude 0 :longitude -180}
-;;       {:latitude 0 :longitude 180}
-;;       {:latitude -90 :longitude 0}
-;;       {:latitude 90 :longitude 0}))
-;;   (testing "invalid locations"
-;;     (are [location]
-;;       (let [record (validate-location {:location location} :location)]
-;;         (is (not (valid? record))))
-;;       {}))
-;;   )
+(deftest test-validate-location
+  (testing "valid locations"
+    (are [location]
+      (is (valid? (validate-location {:location location} :location)))
+      {:latitude 0 :longitude 0}
+      {:latitude 0 :longitude -180}
+      {:latitude 0 :longitude 180}
+      {:latitude -90 :longitude 0}
+      {:latitude 90 :longitude 0}))
+  (testing "invalid locations"
+    (are [location messages]
+      (let [record (validate-location {:location location} :location)]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :location) messages)))
+      {:latitude 0 :location 180.1}
+      {:longitude ["must be between -180.0 and 180.0."]}
+      {:latitude 90.1 :longitude 0}
+      {:latitude ["must be between -90.0 and 90.0."]})))

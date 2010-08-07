@@ -84,6 +84,30 @@
   (includes? inlusions value)
   "is not a valid option.")
 
+(defvalidation validate-latitude
+  "Validates that the record's attribute is between -90.0 and 90."
+  []
+  (latitude? value)
+  "must be between -90.0 and 90.0.")
+
+(defvalidation validate-longitude
+  "Validates that the record's attribute is between -90.0 and 90."
+  []
+  (longitude? value)
+  "must be between -180.0 and 180.0.")
+
+(defn validate-location
+  "Validates that the record's attribute is a valid location."
+  [record attribute & options]
+  (let [options (apply hash-map options)
+        latitude (or (:latitude options) :latitude)
+        longitude (or (:longitude options) :longitude)
+        options (flatten (seq options))]
+    (apply
+     validate-longitude
+     (apply validate-latitude record [attribute latitude] options)
+     [attribute longitude] options)))
+
 (defvalidation validate-max-length 
   "Validates that the record's attribute is not longer than maximum
   number of characters."
@@ -105,26 +129,3 @@ characters."
     (not (blank? value))
     (not (nil? value)))
   "can't be blank.")
-
-(defvalidation validate-latitude
-  "Validates that the record's attribute is between -90.0 and 90."
-  []
-  (latitude? value)
-  "must be between -90.0 and 90.0.")
-
-(defvalidation validate-longitude
-  "Validates that the record's attribute is between -90.0 and 90."
-  []
-  (longitude? value)
-  "must be between -180.0 and 180.0.")
-
-;; (defvalidation validate-location
-;;   "Validates taht the record's attribute has valid latitude and
-;;   longitude coordinates."
-;;   []
-;;   (location? value)
-;;   (let [latitude ((or (:latitude options) :latitude) value)
-;;         longitude ((or (:longitude options) :longitude) value)]
-;;     (if (latitude? latitude)      
-;;       "longitude must be between -180.0 and 180.0."
-;;       "latitude must be between -90.0 and 90.0.")))
