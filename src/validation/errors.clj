@@ -46,7 +46,7 @@
        (join "\n" (map #(str " -  " %) (format-error-messages (error-messages record))))))
 
 (defn valid?
-  "Returns tru if the record is valid, otherwise false."
+  "Returns true if the record is valid, otherwise false."
   [record]  
   (let [errors (error-messages record)]
     (or (nil? errors) (empty? errors))))
