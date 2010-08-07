@@ -8,7 +8,10 @@
 
 (defn error-messages-on
   "Returns all error messages of the record for the attribute."
-  [record attribute] (attribute (error-messages record)))
+  [record attribute]
+  (if (vector? attribute)
+    (get-in (error-messages record) attribute)
+    (get (error-messages record) attribute)))
 
 (defn error-message-on
   "Returns the first error message of the record for the attribute."
@@ -20,7 +23,7 @@
   [record attribute message]
   (if-not (includes? (error-messages-on record attribute) message)
     (with-meta record
-      (assoc-in (meta record) [:errors attribute]
+      (assoc-in (meta record) (flatten [:errors attribute])
                 (conj (or (error-messages-on record attribute) []) message)))
     record))
 

@@ -9,6 +9,11 @@
       :password "secret"
       :password-confirmation "secret"})
 
+(def *continent*
+     {:name "Europe"
+      :iso-3166-alpha-2 "eu"
+      :location {:latitude 0 :longitude 0}})
+
 (deftest test-add-error-message-on
   (let [message "is not a valid email address."]
     (let [user (add-error-message-on *user* :email message)]
@@ -23,6 +28,13 @@
                 (add-error-message-on :email "must be a valid email address.")))
            {:email ["can't be blank." "must be a valid email address."]}))))
 
+(deftest test-add-error-message-on-nested
+  (let [continent (add-error-message-on *continent* [:location :latitude] "must be between -90.0 and 90.0.")]
+    (is (= (error-message-on continent [:location :latitude])
+           "must be between -90.0 and 90.0."))
+    (is (= (error-messages-on continent [:location :latitude])
+           ["must be between -90.0 and 90.0."]))))
+
 (deftest test-error-messages
   (is (= (error-messages *user*) nil))
   (let [messages {:name ["can't be blank"]}
@@ -34,10 +46,20 @@
   (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
     (is (= (error-messages-on record :name) ["can't be blank"]))))
 
+(deftest test-error-messages-on-nested
+  (let [continent (with-meta *continent* {:errors {:location {:latitude ["must be between -90.0 and 90.0."]}}})]
+    (is (= (error-messages-on continent [:location :latitude])
+           ["must be between -90.0 and 90.0."]))))
+
 (deftest test-error-message-on
   (is (= (error-message-on *user* :email) nil))
   (let [record (with-meta {:name ""} {:errors {:name ["can't be blank"]}})]
     (is (= (error-message-on record :name) "can't be blank"))))
+
+(deftest test-error-message-on-nested
+  (let [continent (with-meta *continent* {:errors {:location {:latitude ["must be between -90.0 and 90.0."]}}})]
+    (is (= (error-message-on continent [:location :latitude])
+           "must be between -90.0 and 90.0."))))
 
 (deftest test-format-error-message
   (is (nil? (format-error-message nil nil)))
