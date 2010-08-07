@@ -101,5 +101,7 @@ characters."
 (defvalidation validate-presence
   "Validates that the record's attribute is not blank."
   []
-  (not (blank? value))
+  (if (isa? (class value) String)
+    (not (blank? value))
+    (not (nil? value)))
   "can't be blank.")

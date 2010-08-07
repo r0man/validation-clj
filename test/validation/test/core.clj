@@ -133,8 +133,8 @@
 (deftest test-validate-presence
   (testing "valid attribute"
     (are [value]
-      (is (valid? (validate-presence {:nick value} :nick)))
-      "x" "root"))
+      (is (valid? (validate-presence {:name value} :name)))
+      "x" "root" {:first "First" :last "Last"}))
   (testing "invalid attribute"
     (are [value]
       (let [record (validate-presence {:nick value} :nick)]
