@@ -21,7 +21,7 @@
   (testing "invalid latitude coordinates"
     (are [number]
       (is (not (latitude? number)))
-      -90.1 91 90.1 91)))
+      nil "" -90.1 91 90.1 91)))
 
 (deftest test-longitude?
   (testing "valid longitude coordinates"
@@ -31,4 +31,21 @@
   (testing "invalid longitude coordinates"
     (are [number]
       (is (not (longitude? number)))
-      -180.1 181 180.1 181)))
+      nil "" -180.1 181 180.1 181)))
+
+(deftest test-location?
+  (testing "valid locations"
+    (are [location]
+      (is (location? location))
+      {:latitude 0 :longitude 0}
+      {:latitude 0 :longitude -180}
+      {:latitude 0 :longitude 180}
+      {:latitude -90 :longitude 0}
+      {:latitude 90 :longitude 0}))
+  (testing "invalid locations"
+    (are [location]
+      (is (not (location? location)))
+      {:latitude 0 :longitude -180.1}
+      {:latitude 0 :longitude 180.1}
+      {:latitude -90.1 :longitude 0}
+      {:latitude 90.1 :longitude 0})))
