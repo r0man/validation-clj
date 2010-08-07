@@ -9,3 +9,11 @@
   "Returns true if the email address is valid, otherwise false."
   [address] (and address (re-matches *email-regex* address)))
 
+(defn latitude?
+  "Returns true if the number is in the range of the latitude axis."
+  [number] (and (>= number -90.0) (<= number 90.0)))
+
+(defn longitude?
+  "Returns true if the number is in the range of the longitude axis."
+  [number] (and (>= number -180.0) (<= number 180.0)))
+
