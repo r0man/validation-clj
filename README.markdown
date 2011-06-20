@@ -8,7 +8,8 @@ Import the library.
 
     (use 'validation.core 'validation.errors)
 
-Define a validator like this.
+Define a validator like this. This generates the validate-user and the
+validate-user! functions.
 
     (defvalidator validate-user
       (validate-presence :nick)
@@ -19,7 +20,7 @@ Define a validator like this.
       (validate-presence :password)
       (validate-confirmation :password))
 
-Get some examples to validate.
+Define some examples to validate.
 
     (def *alice* {:nick "alice" :email "alice"})
 
@@ -35,41 +36,40 @@ the metadata.
     (validate-user *alice*)
     ;=> {:nick "alice"}
 
-(validate-user *bob*)
-;=> {:nick "bob"
-;    :email "bob@example.com"
-;    :password "secret"
-;    :password-confirmation "secret"}
+    (validate-user *bob*)
+    ;=> {:nick "bob"
+    ;    :email "bob@example.com"
+    ;    :password "secret"
+    ;    :password-confirmation "secret"}
 
-;; The valid? fn checks if the record returned from a validation fn is
-;; valid or not.
+The valid? fn checks if the record returned from a validation fn is
+valid or not.
 
-(valid? (validate-user *alice*))
-;=> false
+    (valid? (validate-user *alice*))
+    ;=> false
 
-(valid? (validate-user *bob*))
-;=> true
+    (valid? (validate-user *bob*))
+    ;=> true
 
-;; The error-messages returns the error messages from an invalid
-;; record.
+The error-messages returns the error messages from an invalid record.
 
-(error-messages (validate-user *bob*))
-;=> nil
+    (error-messages (validate-user *bob*))
+    ;=> nil
 
-(error-messages (validate-user *alice*))
-;=> {:email ["is not a valid email address." "can't be blank."]
-;    :password ["can't be blank."]}
+    (error-messages (validate-user *alice*))
+    ;=> {:email ["is not a valid email address." "can't be blank."]
+    ;    :password ["can't be blank."]}
 
-;; The validate-user! fn behaves like validate-user, but throws
-;; an error-kit error if the record is not valid.
+The validate-user! fn behaves like validate-user, but throws an
+error-kit error if the record is not valid.
 
-(use clojure.contrib.error-kit)
+    (use 'clojure.contrib.error-kit)
 
-(with-handler (validate-user! *alice*)
-  (handle *validation-error* [record]
-          (meta record)))
-;=> {:email ["is not a valid email address." "can't be blank."]
-;    :password ["can't be blank."]}
+    (with-handler (validate-user! *alice*)
+      (handle *validation-error* [record]
+              (meta record)))
+    ;=> {:email ["is not a valid email address." "can't be blank."]
+    ;    :password ["can't be blank."]}
 
 ;; For anything else look at the tests ...
 
