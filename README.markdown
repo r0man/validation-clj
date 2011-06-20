@@ -4,34 +4,36 @@ A simple validation library for Clojore.
 
 ## Usage
 
+Import the library.
+
     (use 'validation.core 'validation.errors)
 
-;; Define a validator like this.
+Define a validator like this.
 
-  (defvalidator validate-user
-    (validate-presence :nick)
-    (validate-min-length :nick 2)
-    (validate-max-length :nick 16)
-    (validate-presence :email)
-    (validate-email :email)
-    (validate-presence :password)
-    (validate-confirmation :password))
+    (defvalidator validate-user
+      (validate-presence :nick)
+      (validate-min-length :nick 2)
+      (validate-max-length :nick 16)
+      (validate-presence :email)
+      (validate-email :email)
+      (validate-presence :password)
+      (validate-confirmation :password))
 
-;; Get some examples to validate.
+Get some examples to validate.
 
-(def *alice* {:nick "alice" :email "alice"})
+    (def *alice* {:nick "alice" :email "alice"})
 
-(def *bob*
-  {:nick "bob"
-   :email "bob@example.com"
-   :password "secret"
-   :password-confirmation "secret"})
+    (def *bob*
+      {:nick "bob"
+       :email "bob@example.com"
+       :password "secret"
+       :password-confirmation "secret"})
 
-;; The validate-user fn returns the record itself with errors attached
-;; to the metadata.
+The validate-user fn returns the record itself with errors attached to
+the metadata.
 
-(validate-user *alice*)
-;=> {:nick "alice"}
+    (validate-user *alice*)
+    ;=> {:nick "alice"}
 
 (validate-user *bob*)
 ;=> {:nick "bob"
