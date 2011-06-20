@@ -4,18 +4,18 @@ A simple validation library for Clojore.
 
 ## Usage
 
-(use 'validation.core 'validation.errors)
+  (use 'validation.core 'validation.errors)
 
 ;; Define a validator like this.
 
-(defvalidator validate-user
-  (validate-presence :nick)
-  (validate-min-length :nick 2)
-  (validate-max-length :nick 16)
-  (validate-presence :email)
-  (validate-email :email)
-  (validate-presence :password)
-  (validate-confirmation :password))
+  (defvalidator validate-user
+    (validate-presence :nick)
+    (validate-min-length :nick 2)
+    (validate-max-length :nick 16)
+    (validate-presence :email)
+    (validate-email :email)
+    (validate-presence :password)
+    (validate-confirmation :password))
 
 ;; Get some examples to validate.
 
