@@ -33,11 +33,10 @@
    (vector? read-fn) (get-in record read-fn)
    (fn? read-fn) (read-fn record)))
 
-(defmacro defvalidation [fn-name fn-doc arguments predicate-fn error-fn & validation-options]
-  `(defn ~fn-name ~fn-doc [~'attribute ~@arguments & ~'options]
+(defmacro defvalidation [fn-name fn-doc args predicate-fn error-fn]
+  `(defn ~fn-name ~fn-doc [~'attribute ~@args]
      (fn [~'record]
-       (let [~'options (apply hash-map ~'options)
-             ~'value (extract-value ~'record ~'attribute)]
+       (let [~'value (extract-value ~'record ~'attribute)]
          (if ~predicate-fn
            ~'record
            (add-error-message-on ~'record ~'attribute ~error-fn))))))
