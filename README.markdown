@@ -26,7 +26,7 @@ validate-user! functions.
       (min-length-of :nick 2)
       (max-length-of :nick 16)
       (presence-of :email)
-      (email :email)
+      (is-email :email)
       (presence-of :password)
       (confirmation-of :password))
 
