@@ -18,10 +18,10 @@ Use the validation library.
 
     (use 'validation.core 'validation.errors)
 
-Define a validator which generates the validate-user and the
+Define a validation which generates the valid-user?, validate-user and
 validate-user! functions.
 
-    (defvalidator validate-user
+    (defvalidation user
       (validate-presence :nick)
       (validate-min-length :nick 2)
       (validate-max-length :nick 16)
@@ -30,8 +30,17 @@ validate-user! functions.
       (validate-presence :password)
       (validate-confirmation :password))
 
-The validate-user fn returns the record itself with errors attached to
-the metadata.
+The valid-user? fn checks if the record is valid or not.
+
+    (valid-user? *alice*)
+    ;=> false
+
+    (valid-user? *bob*)
+    ;=> true
+
+
+The validate-user fn returns the record itself with possible error
+messages attached to the metadata.
 
     (validate-user *alice*)
     ;=> {:nick "alice"}
@@ -42,16 +51,8 @@ the metadata.
     ;    :password "secret"
     ;    :password-confirmation "secret"}
 
-The valid? fn checks if the record returned from a validation fn is
-valid or not.
-
-    (valid? (validate-user *alice*))
-    ;=> false
-
-    (valid? (validate-user *bob*))
-    ;=> true
-
-The error-messages fn returns the error messages from an invalid record.
+The error-messages reads the error messages from the meta data of the
+validated record.
 
     (error-messages (validate-user *bob*))
     ;=> nil
@@ -60,8 +61,8 @@ The error-messages fn returns the error messages from an invalid record.
     ;=> {:email ["is not a valid email address." "can't be blank."]
     ;    :password ["can't be blank."]}
 
-The validate-user! fn behaves like validate-user, but throws an
-error-kit error if the record is not valid.
+The validate-user! fn is similar to validate-user, but uses the
+error-kit condition system to signal validation errors.
 
     (use 'clojure.contrib.error-kit)
 
@@ -70,6 +71,12 @@ error-kit error if the record is not valid.
               (meta record)))
     ;=> {:email ["is not a valid email address." "can't be blank."]
     ;    :password ["can't be blank."]}
+
+    (validate-user! *bob*)
+    ;=> {:nick "bob"
+    ;    :email "bob@example.com"
+    ;    :password "secret"
+    ;    :password-confirmation "secret"}
 
 ;; For anything else look at the tests ...
 

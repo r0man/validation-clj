@@ -4,7 +4,7 @@
 
 (refer-private 'validation.core)
 
-(defvalidator validate-user
+(defvalidation user
   (validate-presence :nick)
   (validate-min-length :nick 2)
   (validate-max-length :nick 16)
@@ -222,3 +222,7 @@
               (is (not (valid? record)))
               (is (= (error-messages record)
                      (error-messages (validate-user invalid-user))))))))
+
+(deftest test-valid-user?
+  (is (valid-user? *valid-user*))
+  (is (not (valid-user? {}))))
