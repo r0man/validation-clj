@@ -78,7 +78,7 @@ error-kit condition system to signal validation errors.
     ;    :password "secret"
     ;    :password-confirmation "secret"}
 
-;; For anything else look at the tests ...
+For anything else look at the tests ...
 
 ## Installation
 
