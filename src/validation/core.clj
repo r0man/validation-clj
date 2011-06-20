@@ -34,12 +34,21 @@
    (fn? read-fn) (read-fn record)))
 
 (defmacro defvalidation [fn-name fn-doc arguments predicate-fn error-fn & validation-options]
-  `(defn ~fn-name ~fn-doc [~'record ~'attribute ~@arguments & ~'options]
-     (let [~'options (apply hash-map ~'options)
-           ~'value (extract-value ~'record ~'attribute)]
-       (if ~predicate-fn
-         ~'record
-         (add-error-message-on ~'record ~'attribute ~error-fn)))))
+  `(defn ~fn-name ~fn-doc [~'attribute ~@arguments & ~'options]
+     (fn [~'record]
+       (let [~'options (apply hash-map ~'options)
+             ~'value (extract-value ~'record ~'attribute)]
+         (if ~predicate-fn
+           ~'record
+           (add-error-message-on ~'record ~'attribute ~error-fn))))))
+
+(defmacro defvalidator [name & validations]
+  (let [validations# validations]
+    `(do
+       (defn ~name [~'record]
+         ((comp ~@validations#) ~'record))
+       (defn ~(symbol (str name "!")) [~'record]
+         (validate ~'record (comp ~@validations#))))))
 
 (defvalidation validate-acceptance
   "Validates that the record's attribute is accepted."
@@ -101,15 +110,16 @@
 
 (defn validate-location
   "Validates that the record's attribute is a valid location."
-  [record attribute & options]
-  (let [options (apply hash-map options)
-        latitude (or (:latitude options) :latitude)
-        longitude (or (:longitude options) :longitude)
-        options (flatten (seq options))]
-    (apply
-     validate-longitude
-     (apply validate-latitude record [attribute latitude] options)
-     [attribute longitude] options)))
+  [attribute & {:keys [latitude longitude]}]
+  (let [latitude (or latitude :latitude) longitude (or longitude :longitude)]
+    (fn [record]
+      (if-let [errors (-> (extract-value record attribute)
+                          ((validate-latitude latitude))
+                          ((validate-longitude longitude))
+                          meta :errors)]
+        (with-meta record
+          (assoc-in (meta record) [:errors attribute] errors))
+        record))))
 
 (defvalidation validate-max-length
   "Validates that the record's attribute is not longer than maximum
@@ -132,4 +142,3 @@ characters."
     (not (blank? value))
     (not (nil? value)))
   "can't be blank.")
-

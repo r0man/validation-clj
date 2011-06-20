@@ -4,21 +4,20 @@
 
 (refer-private 'validation.core)
 
-(defn validate-user [user]
-  (-> user
-      (validate-presence :nick)
-      (validate-min-length :nick 2)
-      (validate-max-length :nick 16)
-      (validate-presence :email)
-      (validate-email :email)
-      (validate-presence :password)
-      (validate-confirmation :password)))
+(defvalidator validate-user
+  (validate-presence :nick)
+  (validate-min-length :nick 2)
+  (validate-max-length :nick 16)
+  (validate-presence :email)
+  (validate-email :email)
+  (validate-presence :password)
+  (validate-confirmation :password))
 
 (def *valid-user*
-     {:nick "bob"
-      :email "bob@example.com"
-      :password "secret"
-      :password-confirmation "secret"})
+  {:nick "bob"
+   :email "bob@example.com"
+   :password "secret"
+   :password-confirmation "secret"})
 
 (deftest test-extract-value
   (is (= "bob" (extract-value {:nick "bob"} :nick)))
@@ -28,21 +27,21 @@
 (deftest test-validate-acceptance
   (testing "accepted attribute"
     (are [value]
-      (is (valid? (validate-acceptance {:tos value} :tos)))
+      (is (valid? ((validate-acceptance :tos) {:tos value} )))
       "1"))
   (testing "not accepted attribute"
     (are [value]
-      (let [record (validate-acceptance {:tos value} :tos)]
+      (let [record ((validate-acceptance :tos) {:tos value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :tos) ["must be accepted."])))
       nil "" "0")))
 
 (deftest test-validate-confirmation
   (testing "valid attribute"
-    (is (valid? (validate-confirmation {:password "secret" :password-confirmation "secret"} :password))))
+    (is (valid? ((validate-confirmation :password) {:password "secret" :password-confirmation "secret"}))))
   (testing "invalid attribute"
     (are [value]
-      (let [record (validate-confirmation {:password "secret" :password-confirmation value} :password)]
+      (let [record ((validate-confirmation :password) {:password "secret" :password-confirmation value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :password) ["doesn't match confirmation."])))
       nil "" "invalid")))
@@ -50,11 +49,11 @@
 (deftest test-validate-email
   (testing "valid email address"
     (are [value]
-      (is (valid? (validate-email {:email value} :email)))
+      (is (valid? ((validate-email :email) {:email value})))
       "info@domain.com" "first.last@sub.domain.com"))
   (testing "invalid email address"
     (are [value]
-      (let [record (validate-email {:email value} :email)]
+      (let [record ((validate-email :email) {:email value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :email) ["is not a valid email address."])))
       nil "" "root" "root@localhost")))
@@ -62,11 +61,11 @@
 (deftest test-validate-exact-length
   (testing "valid attribute"
     (are [value]
-      (is (valid? (validate-exact-length {:country value} :country 2)))
+      (is (valid? ((validate-exact-length :country 2) {:country value})))
       "de" "es"))
   (testing "invalid attribute"
     (are [value]
-      (let [record (validate-exact-length {:country value} :country 2)]
+      (let [record ((validate-exact-length :country 2) {:country value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :country) ["has the wrong length (should be 2 characters)."])))
       nil "" "deu" "esp")))
@@ -78,11 +77,11 @@
 (deftest test-validate-exclusion
   (testing "valid attribute"
     (are [value]
-      (is (valid? (validate-exclusion {:nick value} :nick ["admin" "root"])))
+      (is (valid? ((validate-exclusion :nick ["admin" "root"]) {:nick value})))
       nil "" "test"))
   (testing "invalid attribute"
     (are [value]
-      (let [record (validate-exclusion {:nick value} :nick ["admin" "root"])]
+      (let [record ((validate-exclusion :nick ["admin" "root"]) {:nick value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["is reserved."])))
       "admin" "root")))
@@ -90,11 +89,11 @@
 (deftest test-validate-format
   (testing "valid attribute"
     (are [value]
-      (is (valid? (validate-format {:nick value} :nick #"(?i)[a-z0-9]+")))
+      (is (valid? ((validate-format :nick #"(?i)[a-z0-9]+") {:nick value})))
       "nick" "n1ck" ))
   (testing "invalid attribute"
     (are [value]
-      (let [record (validate-format {:nick value} :nick #"(?i)[a-z0-9]+")]
+      (let [record ((validate-format :nick #"(?i)[a-z0-9]+") {:nick value} )]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["is invalid."])))
       nil "" "!" "\"" "§" "$" "%" "&" "/" "(" ")" "=" "?" "`" "´")))
@@ -102,11 +101,11 @@
 (deftest test-validate-inclusion
   (testing "valid attribute"
     (are [value]
-      (is (valid? (validate-inclusion {:gender value} :gender ["m" "f"])))
+      (is (valid? ((validate-inclusion :gender ["m" "f"]) {:gender value} )))
       "m" "f"))
   (testing "invalid attribute"
     (are [value]
-      (let [record (validate-inclusion {:gender value} :gender ["m" "f"])]
+      (let [record ((validate-inclusion :gender ["m" "f"]) {:gender value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :gender) ["is not a valid option."])))
       nil "" "x")))
@@ -114,11 +113,11 @@
 (deftest test-validate-max-length
   (testing "valid attribute"
     (are [value]
-      (is (valid? (validate-max-length {:nick value} :nick 5)))
+      (is (valid? ((validate-max-length :nick 5) {:nick value})))
       nil "" "1" "12" "123" "1234" "1234"))
   (testing "invalid attribute"
     (are [value]
-      (let [record (validate-max-length {:nick value} :nick 5)]
+      (let [record ((validate-max-length :nick 5) {:nick value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["is too long (maximum is 5 characters)."])))
       "123456")))
@@ -126,11 +125,11 @@
 (deftest test-validate-min-length
   (testing "valid attribute"
     (are [value]
-      (is (valid? (validate-min-length {:nick value} :nick 2)))
+      (is (valid? ((validate-min-length :nick 2) {:nick value})))
       "12" "123" "1234" "1234"))
   (testing "invalid attribute"
     (are [value]
-      (let [record (validate-min-length {:nick value} :nick 2)]
+      (let [record ((validate-min-length :nick 2) {:nick value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["is too short (minimum is 2 characters)."])))
       nil "" "1")))
@@ -138,16 +137,61 @@
 (deftest test-validate-presence
   (testing "valid attribute"
     (are [value]
-      (is (valid? (validate-presence {:name value} :name)))
+      (is (valid? ((validate-presence :name) {:name value})))
       "x" "root" {:first "First" :last "Last"}))
   (testing "invalid attribute"
     (are [value]
-      (let [record (validate-presence {:nick value} :nick)]
+      (let [record ((validate-presence :nick) {:nick value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["can't be blank."])))
       nil "")))
 
-(deftest test-validate
+(deftest test-validate-latitude
+  (testing "valid latitude"
+    (are [latitude]
+      (is (valid? ((validate-latitude :latitude) {:latitude latitude})))
+      -90.0 90 0 90 90.0))
+  (testing "invalid latitude"
+    (are [latitude]
+      (let [record ((validate-latitude :latitude) {:latitude latitude})]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :latitude)
+               ["must be between -90.0 and 90.0."])))
+      nil "" -90.1 91 90.1 91)))
+
+(deftest test-validate-longitude
+  (testing "valid longitude"
+    (are [longitude]
+      (is (valid? ((validate-longitude :longitude) {:longitude longitude})))
+      -180.0 180 0 180 180.0))
+  (testing "invalid longitude"
+    (are [longitude]
+      (let [record ((validate-longitude :longitude) {:longitude longitude})]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :longitude)
+               ["must be between -180.0 and 180.0."])))
+      nil "" -180.1 181 180.1 181)))
+
+(deftest test-validate-location
+  (testing "valid locations"
+    (are [location]
+      (is (valid? ((validate-location :location) {:location location})))
+      {:latitude 0 :longitude 0}
+      {:latitude 0 :longitude -180}
+      {:latitude 0 :longitude 180}
+      {:latitude -90 :longitude 0}
+      {:latitude 90 :longitude 0}))
+  (testing "invalid locations"
+    (are [location messages]
+      (let [record ((validate-location :location) {:location location})]
+        (is (not (valid? record)))
+        (is (= (error-messages-on record :location) messages)))
+      {:latitude 0 :location 180.1}
+      {:longitude ["must be between -180.0 and 180.0."]}
+      {:latitude 90.1 :longitude 0}
+      {:latitude ["must be between -90.0 and 90.0."]})))
+
+(deftest test-validate-user
   (is (= (validate *valid-user* validate-user) *valid-user*))
   (let [invalid-user (assoc *valid-user* :nick "" :email "bob")]
     (is (thrown? IllegalArgumentException (validate invalid-user validate-user)))
@@ -163,47 +207,18 @@
               (is (= (error-messages record)
                      (error-messages (validate-user invalid-user))))))))
 
-(deftest test-validate-latitude
-  (testing "valid latitude"
-    (are [latitude]
-      (is (valid? (validate-latitude {:latitude latitude} :latitude)))
-      -90.0 90 0 90 90.0))
-  (testing "invalid latitude"
-    (are [latitude]
-      (let [record (validate-latitude {:latitude latitude} :latitude)]
-        (is (not (valid? record)))
-        (is (= (error-messages-on record :latitude)
-               ["must be between -90.0 and 90.0."])))
-      nil "" -90.1 91 90.1 91)))
-
-(deftest test-validate-longitude
-  (testing "valid longitude"
-    (are [longitude]
-      (is (valid? (validate-longitude {:longitude longitude} :longitude)))
-      -180.0 180 0 180 180.0))
-  (testing "invalid longitude"
-    (are [longitude]
-      (let [record (validate-longitude {:longitude longitude} :longitude)]
-        (is (not (valid? record)))
-        (is (= (error-messages-on record :longitude)
-               ["must be between -180.0 and 180.0."])))
-      nil "" -180.1 181 180.1 181)))
-
-(deftest test-validate-location
-  (testing "valid locations"
-    (are [location]
-      (is (valid? (validate-location {:location location} :location)))
-      {:latitude 0 :longitude 0}
-      {:latitude 0 :longitude -180}
-      {:latitude 0 :longitude 180}
-      {:latitude -90 :longitude 0}
-      {:latitude 90 :longitude 0}))
-  (testing "invalid locations"
-    (are [location messages]
-      (let [record (validate-location {:location location} :location)]
-        (is (not (valid? record)))
-        (is (= (error-messages-on record :location) messages)))
-      {:latitude 0 :location 180.1}
-      {:longitude ["must be between -180.0 and 180.0."]}
-      {:latitude 90.1 :longitude 0}
-      {:latitude ["must be between -90.0 and 90.0."]})))
+(deftest test-validate-user!
+  (is (= (validate-user! *valid-user*) *valid-user*))
+  (let [invalid-user (assoc *valid-user* :nick "" :email "bob")]
+    (is (thrown? IllegalArgumentException (validate-user! invalid-user)))
+    (try
+      (validate-user! invalid-user)
+      (catch IllegalArgumentException e
+        (is (= (.getMessage e)
+               (exception-message (validate-user invalid-user))))))
+    (with-handler
+      (validate-user! invalid-user)
+      (handle *validation-error* [record]
+              (is (not (valid? record)))
+              (is (= (error-messages record)
+                     (error-messages (validate-user invalid-user))))))))
