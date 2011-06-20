@@ -51,13 +51,13 @@
        (defn ~(symbol (str "validate-" name# "!")) [~'record]
          (validate ~'record (comp ~@validations#))))))
 
-(defvalidator validate-acceptance
+(defvalidator validate-acceptance-of
   "Validates that the record's attribute is accepted."
   []
   (and value (= value "1"))
   "must be accepted.")
 
-(defvalidator validate-confirmation
+(defvalidator validate-confirmation-of
   "Validates that the record's attribute is the same as the
   confirmation attribute."
   []
@@ -70,27 +70,27 @@
   (email? value)
   "is not a valid email address.")
 
-(defvalidator validate-exact-length
+(defvalidator validate-exact-length-of
   "Validates that the record's attribute is exactly length characters
   long."
   [length]
   (= (count value) length)
   (format "has the wrong length (should be %d characters)." length))
 
-(defvalidator validate-exclusion
+(defvalidator validate-exclusion-of
   "Validates that the record's attribute is not included in the
   sequence of values."
   [exlusions]
   (not (includes? exlusions value))
   "is reserved.")
 
-(defvalidator validate-format
+(defvalidator validate-format-of
   "Validates that the record's attribute matches the pattern."
   [pattern]
   (and value (re-matches pattern value))
   "is invalid.")
 
-(defvalidator validate-inclusion
+(defvalidator validate-inclusion-of
   "Validates that the record's attribute is not included in the
   sequence of values."
   [inlusions]
@@ -122,21 +122,21 @@
           (assoc-in (meta record) [:errors attribute] errors))
         record))))
 
-(defvalidator validate-max-length
+(defvalidator validate-max-length-of
   "Validates that the record's attribute is not longer than maximum
   number of characters."
   [maximum]
   (<= (count value) maximum)
   (format "is too long (maximum is %d characters)." maximum))
 
-(defvalidator validate-min-length
+(defvalidator validate-min-length-of
   "Validates that the record's attribute is at least minimum number of
 characters."
   [minimum]
   (>= (count value) minimum)
   (format "is too short (minimum is %d characters)." minimum))
 
-(defvalidator validate-presence
+(defvalidator validate-presence-of
   "Validates that the record's attribute is not blank."
   []
   (if (isa? (class value) String)

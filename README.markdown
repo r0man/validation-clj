@@ -22,13 +22,13 @@ Define a validation which generates the valid-user?, validate-user and
 validate-user! functions.
 
     (defvalidation user
-      (validate-presence :nick)
-      (validate-min-length :nick 2)
-      (validate-max-length :nick 16)
-      (validate-presence :email)
+      (validate-presence-of :nick)
+      (validate-min-length-of :nick 2)
+      (validate-max-length-of :nick 16)
+      (validate-presence-of :email)
       (validate-email :email)
-      (validate-presence :password)
-      (validate-confirmation :password))
+      (validate-presence-of :password)
+      (validate-confirmation-of :password))
 
 The valid-user? fn checks if the record is valid or not.
 

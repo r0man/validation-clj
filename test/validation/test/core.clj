@@ -5,13 +5,13 @@
 (refer-private 'validation.core)
 
 (defvalidation user
-  (validate-presence :nick)
-  (validate-min-length :nick 2)
-  (validate-max-length :nick 16)
-  (validate-presence :email)
+  (validate-presence-of :nick)
+  (validate-min-length-of :nick 2)
+  (validate-max-length-of :nick 16)
+  (validate-presence-of :email)
   (validate-email :email)
-  (validate-presence :password)
-  (validate-confirmation :password))
+  (validate-presence-of :password)
+  (validate-confirmation-of :password))
 
 (def *valid-user*
   {:nick "bob"
@@ -24,24 +24,24 @@
   (is (= "bob" (extract-value {:user {:nick "bob"}} [:user :nick])))
   (is (= "bob" (extract-value {:nick "bob"} (fn [record] (:nick record))))))
 
-(deftest test-validate-acceptance
+(deftest test-validate-acceptance-of
   (testing "accepted attribute"
     (are [value]
-      (is (valid? ((validate-acceptance :tos) {:tos value} )))
+      (is (valid? ((validate-acceptance-of :tos) {:tos value} )))
       "1"))
   (testing "not accepted attribute"
     (are [value]
-      (let [record ((validate-acceptance :tos) {:tos value})]
+      (let [record ((validate-acceptance-of :tos) {:tos value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :tos) ["must be accepted."])))
       nil "" "0")))
 
-(deftest test-validate-confirmation
+(deftest test-validate-confirmation-of
   (testing "valid attribute"
-    (is (valid? ((validate-confirmation :password) {:password "secret" :password-confirmation "secret"}))))
+    (is (valid? ((validate-confirmation-of :password) {:password "secret" :password-confirmation "secret"}))))
   (testing "invalid attribute"
     (are [value]
-      (let [record ((validate-confirmation :password) {:password "secret" :password-confirmation value})]
+      (let [record ((validate-confirmation-of :password) {:password "secret" :password-confirmation value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :password) ["doesn't match confirmation."])))
       nil "" "invalid")))
@@ -58,14 +58,14 @@
         (is (= (error-messages-on record :email) ["is not a valid email address."])))
       nil "" "root" "root@localhost")))
 
-(deftest test-validate-exact-length
+(deftest test-validate-exact-length-of
   (testing "valid attribute"
     (are [value]
-      (is (valid? ((validate-exact-length :country 2) {:country value})))
+      (is (valid? ((validate-exact-length-of :country 2) {:country value})))
       "de" "es"))
   (testing "invalid attribute"
     (are [value]
-      (let [record ((validate-exact-length :country 2) {:country value})]
+      (let [record ((validate-exact-length-of :country 2) {:country value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :country) ["has the wrong length (should be 2 characters)."])))
       nil "" "deu" "esp")))
@@ -74,74 +74,74 @@
   (is (= (confirmation-keyword "password") :password-confirmation))
   (is (= (confirmation-keyword :password) :password-confirmation)))
 
-(deftest test-validate-exclusion
+(deftest test-validate-exclusion-of
   (testing "valid attribute"
     (are [value]
-      (is (valid? ((validate-exclusion :nick ["admin" "root"]) {:nick value})))
+      (is (valid? ((validate-exclusion-of :nick ["admin" "root"]) {:nick value})))
       nil "" "test"))
   (testing "invalid attribute"
     (are [value]
-      (let [record ((validate-exclusion :nick ["admin" "root"]) {:nick value})]
+      (let [record ((validate-exclusion-of :nick ["admin" "root"]) {:nick value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["is reserved."])))
       "admin" "root")))
 
-(deftest test-validate-format
+(deftest test-validate-format-of
   (testing "valid attribute"
     (are [value]
-      (is (valid? ((validate-format :nick #"(?i)[a-z0-9]+") {:nick value})))
+      (is (valid? ((validate-format-of :nick #"(?i)[a-z0-9]+") {:nick value})))
       "nick" "n1ck" ))
   (testing "invalid attribute"
     (are [value]
-      (let [record ((validate-format :nick #"(?i)[a-z0-9]+") {:nick value} )]
+      (let [record ((validate-format-of :nick #"(?i)[a-z0-9]+") {:nick value} )]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["is invalid."])))
       nil "" "!" "\"" "§" "$" "%" "&" "/" "(" ")" "=" "?" "`" "´")))
 
-(deftest test-validate-inclusion
+(deftest test-validate-inclusion-of
   (testing "valid attribute"
     (are [value]
-      (is (valid? ((validate-inclusion :gender ["m" "f"]) {:gender value} )))
+      (is (valid? ((validate-inclusion-of :gender ["m" "f"]) {:gender value} )))
       "m" "f"))
   (testing "invalid attribute"
     (are [value]
-      (let [record ((validate-inclusion :gender ["m" "f"]) {:gender value})]
+      (let [record ((validate-inclusion-of :gender ["m" "f"]) {:gender value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :gender) ["is not a valid option."])))
       nil "" "x")))
 
-(deftest test-validate-max-length
+(deftest test-validate-max-length-of
   (testing "valid attribute"
     (are [value]
-      (is (valid? ((validate-max-length :nick 5) {:nick value})))
+      (is (valid? ((validate-max-length-of :nick 5) {:nick value})))
       nil "" "1" "12" "123" "1234" "1234"))
   (testing "invalid attribute"
     (are [value]
-      (let [record ((validate-max-length :nick 5) {:nick value})]
+      (let [record ((validate-max-length-of :nick 5) {:nick value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["is too long (maximum is 5 characters)."])))
       "123456")))
 
-(deftest test-validate-min-length
+(deftest test-validate-min-length-of
   (testing "valid attribute"
     (are [value]
-      (is (valid? ((validate-min-length :nick 2) {:nick value})))
+      (is (valid? ((validate-min-length-of :nick 2) {:nick value})))
       "12" "123" "1234" "1234"))
   (testing "invalid attribute"
     (are [value]
-      (let [record ((validate-min-length :nick 2) {:nick value})]
+      (let [record ((validate-min-length-of :nick 2) {:nick value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["is too short (minimum is 2 characters)."])))
       nil "" "1")))
 
-(deftest test-validate-presence
+(deftest test-validate-presence-of
   (testing "valid attribute"
     (are [value]
-      (is (valid? ((validate-presence :name) {:name value})))
+      (is (valid? ((validate-presence-of :name) {:name value})))
       "x" "root" {:first "First" :last "Last"}))
   (testing "invalid attribute"
     (are [value]
-      (let [record ((validate-presence :nick) {:nick value})]
+      (let [record ((validate-presence-of :nick) {:nick value})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :nick) ["can't be blank."])))
       nil "")))
