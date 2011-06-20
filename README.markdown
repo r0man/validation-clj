@@ -4,11 +4,21 @@ A simple validation library for Clojore.
 
 ## Usage
 
-Import the library.
+Need some records validated?
+
+    (def *alice* {:nick "alice" :email "alice"})
+
+    (def *bob*
+      {:nick "bob"
+       :email "bob@example.com"
+       :password "secret"
+       :password-confirmation "secret"})
+
+Use the validation library.
 
     (use 'validation.core 'validation.errors)
 
-Define a validator like this. This generates the validate-user and the
+Define a validator which generates the validate-user and the
 validate-user! functions.
 
     (defvalidator validate-user
@@ -19,16 +29,6 @@ validate-user! functions.
       (validate-email :email)
       (validate-presence :password)
       (validate-confirmation :password))
-
-Define some examples to validate.
-
-    (def *alice* {:nick "alice" :email "alice"})
-
-    (def *bob*
-      {:nick "bob"
-       :email "bob@example.com"
-       :password "secret"
-       :password-confirmation "secret"})
 
 The validate-user fn returns the record itself with errors attached to
 the metadata.
@@ -51,7 +51,7 @@ valid or not.
     (valid? (validate-user *bob*))
     ;=> true
 
-The error-messages returns the error messages from an invalid record.
+The error-messages fn returns the error messages from an invalid record.
 
     (error-messages (validate-user *bob*))
     ;=> nil
