@@ -24,13 +24,16 @@
   [attribute] (keyword (replace-re #"^\:+" "" (str attribute "-confirmation"))))
 
 (defn extract-value
-  "Extract the value of the record's attribute."
-  [record attribute]
-  (if (vector? attribute)
-    (get-in record attribute)
-    (get record attribute)))
+  "Extract the validation attributes from record. Keywords are read
+  with get, vectors with get-in and fn by applying the fn to the
+  record."
+  [record read-fn]
+  (cond
+   (keyword? read-fn) (get record read-fn)
+   (vector? read-fn) (get-in record read-fn)
+   (fn? read-fn) (read-fn record)))
 
-(defmacro defvalidation [fn-name fn-doc arguments predicate-fn error-fn & validation-options]  
+(defmacro defvalidation [fn-name fn-doc arguments predicate-fn error-fn & validation-options]
   `(defn ~fn-name ~fn-doc [~'record ~'attribute ~@arguments & ~'options]
      (let [~'options (apply hash-map ~'options)
            ~'value (extract-value ~'record ~'attribute)]
@@ -51,13 +54,13 @@
   (= value ((confirmation-keyword attribute) record))
   "doesn't match confirmation.")
 
-(defvalidation validate-email 
+(defvalidation validate-email
   "Validates that the record's attribute is a valid email address."
   []
   (email? value)
   "is not a valid email address.")
 
-(defvalidation validate-exact-length 
+(defvalidation validate-exact-length
   "Validates that the record's attribute is exactly length characters
   long."
   [length]
@@ -108,14 +111,14 @@
      (apply validate-latitude record [attribute latitude] options)
      [attribute longitude] options)))
 
-(defvalidation validate-max-length 
+(defvalidation validate-max-length
   "Validates that the record's attribute is not longer than maximum
   number of characters."
   [maximum]
   (<= (count value) maximum)
   (format "is too long (maximum is %d characters)." maximum))
 
-(defvalidation validate-min-length 
+(defvalidation validate-min-length
   "Validates that the record's attribute is at least minimum number of
 characters."
   [minimum]
@@ -129,3 +132,4 @@ characters."
     (not (blank? value))
     (not (nil? value)))
   "can't be blank.")
+

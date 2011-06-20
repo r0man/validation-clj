@@ -20,6 +20,11 @@
       :password "secret"
       :password-confirmation "secret"})
 
+(deftest test-extract-value
+  (is (= "bob" (extract-value {:nick "bob"} :nick)))
+  (is (= "bob" (extract-value {:user {:nick "bob"}} [:user :nick])))
+  (is (= "bob" (extract-value {:nick "bob"} (fn [record] (:nick record))))))
+
 (deftest test-validate-acceptance
   (testing "accepted attribute"
     (are [value]
