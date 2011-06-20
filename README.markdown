@@ -1,6 +1,6 @@
 # validation-clj
 
-A simple validation library for Clojore.
+A simple validation library for Clojure.
 
 ## Usage
 
