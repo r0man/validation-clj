@@ -41,7 +41,7 @@
            ~'record
            (add-error-message-on ~'record ~'attribute ~error-fn))))))
 
-(defmacro defvalidation [name & validations]
+(defmacro defvalidate [name & validations]
   (let [name# name validations# validations]
     `(do
        (defn ~(symbol (str "valid-" name# "?")) [~'record]
@@ -51,92 +51,92 @@
        (defn ~(symbol (str "validate-" name# "!")) [~'record]
          (validate ~'record (comp ~@validations#))))))
 
-(defvalidator validate-acceptance-of
+(defvalidator acceptance-of
   "Validates that the record's attribute is accepted."
   []
   (and value (= value "1"))
   "must be accepted.")
 
-(defvalidator validate-confirmation-of
+(defvalidator confirmation-of
   "Validates that the record's attribute is the same as the
   confirmation attribute."
   []
   (= value ((confirmation-keyword attribute) record))
   "doesn't match confirmation.")
 
-(defvalidator validate-email
+(defvalidator is-email
   "Validates that the record's attribute is a valid email address."
   []
   (email? value)
   "is not a valid email address.")
 
-(defvalidator validate-exact-length-of
+(defvalidator exact-length-of
   "Validates that the record's attribute is exactly length characters
   long."
   [length]
   (= (count value) length)
   (format "has the wrong length (should be %d characters)." length))
 
-(defvalidator validate-exclusion-of
+(defvalidator exclusion-of
   "Validates that the record's attribute is not included in the
   sequence of values."
   [exlusions]
   (not (includes? exlusions value))
   "is reserved.")
 
-(defvalidator validate-format-of
+(defvalidator format-of
   "Validates that the record's attribute matches the pattern."
   [pattern]
   (and value (re-matches pattern value))
   "is invalid.")
 
-(defvalidator validate-inclusion-of
+(defvalidator inclusion-of
   "Validates that the record's attribute is not included in the
   sequence of values."
   [inlusions]
   (includes? inlusions value)
   "is not a valid option.")
 
-(defvalidator validate-latitude
+(defvalidator is-latitude
   "Validates that the record's attribute is between -90.0 and 90."
   []
   (latitude? value)
   "must be between -90.0 and 90.0.")
 
-(defvalidator validate-longitude
+(defvalidator is-longitude
   "Validates that the record's attribute is between -90.0 and 90."
   []
   (longitude? value)
   "must be between -180.0 and 180.0.")
 
-(defn validate-location
+(defn is-location
   "Validates that the record's attribute is a valid location."
   [attribute & {:keys [latitude longitude]}]
   (let [latitude (or latitude :latitude) longitude (or longitude :longitude)]
     (fn [record]
       (if-let [errors (-> (extract-value record attribute)
-                          ((validate-latitude latitude))
-                          ((validate-longitude longitude))
+                          ((is-latitude latitude))
+                          ((is-longitude longitude))
                           meta :errors)]
         (with-meta record
           (assoc-in (meta record) [:errors attribute] errors))
         record))))
 
-(defvalidator validate-max-length-of
+(defvalidator max-length-of
   "Validates that the record's attribute is not longer than maximum
   number of characters."
   [maximum]
   (<= (count value) maximum)
   (format "is too long (maximum is %d characters)." maximum))
 
-(defvalidator validate-min-length-of
+(defvalidator min-length-of
   "Validates that the record's attribute is at least minimum number of
 characters."
   [minimum]
   (>= (count value) minimum)
   (format "is too short (minimum is %d characters)." minimum))
 
-(defvalidator validate-presence-of
+(defvalidator presence-of
   "Validates that the record's attribute is not blank."
   []
   (if (isa? (class value) String)
