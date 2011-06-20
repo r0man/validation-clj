@@ -4,7 +4,7 @@ A simple validation library for Clojore.
 
 ## Usage
 
-  (use 'validation.core 'validation.errors)
+    (use 'validation.core 'validation.errors)
 
 ;; Define a validator like this.
 
