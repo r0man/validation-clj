@@ -43,11 +43,11 @@
            (add-error-message-on ~'record ~'attribute ~error-fn))))))
 
 (defmacro defvalidator [name & validations]
-  (let [validations# validations]
+  (let [name# name validations# validations]
     `(do
-       (defn ~name [~'record]
+       (defn ~name# [~'record]
          ((comp ~@validations#) ~'record))
-       (defn ~(symbol (str name "!")) [~'record]
+       (defn ~(symbol (str name# "!")) [~'record]
          (validate ~'record (comp ~@validations#))))))
 
 (defvalidation validate-acceptance
