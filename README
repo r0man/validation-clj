@@ -71,7 +71,7 @@ error-kit condition system to signal validation errors.
   (use 'clojure.contrib.error-kit)
 
   (with-handler (validate-user! *alice*)
-    (handle *validation-error* [record]
+    (handle validation-error [record]
             (meta record)))
   ;=> {:email ["is not a valid email address." "can't be blank."]
   ;    :password ["can't be blank."]}
