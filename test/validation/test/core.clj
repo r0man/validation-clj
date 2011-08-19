@@ -186,10 +186,15 @@
       (let [record ((is-location :location) {:location location})]
         (is (not (valid? record)))
         (is (= (error-messages-on record :location) messages)))
-      {:latitude 0 :location 180.1}
+      {}
+      {:latitude ["must be between -90.0 and 90.0."]
+       :longitude ["must be between -180.0 and 180.0."]}
+      {:latitude 0 :longitude 180.1}
       {:longitude ["must be between -180.0 and 180.0."]}
       {:latitude 90.1 :longitude 0}
-      {:latitude ["must be between -90.0 and 90.0."]})))
+      {:latitude ["must be between -90.0 and 90.0."]})
+    (is (= (error-messages ((is-location :location) nil))
+           (error-messages ((is-location :location) {}))))))
 
 (deftest test-validate-user
   (is (= (validate *valid-user* validate-user) *valid-user*))

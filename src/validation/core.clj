@@ -114,13 +114,14 @@
   [attribute & {:keys [latitude longitude]}]
   (let [latitude (or latitude :latitude) longitude (or longitude :longitude)]
     (fn [record]
-      (if-let [errors (-> (extract-value record attribute)
-                          ((is-latitude latitude))
-                          ((is-longitude longitude))
-                          meta :errors)]
-        (with-meta record
-          (assoc-in (meta record) [:errors attribute] errors))
-        record))))
+      (let [record (or record {})]
+        (if-let [errors (-> (or (extract-value record attribute) {})
+                            ((is-latitude latitude))
+                            ((is-longitude longitude))
+                            meta :errors)]
+          (with-meta record
+            (assoc-in (meta record) [:errors attribute] errors))
+          record)))))
 
 (defvalidator max-length-of
   "Validates that the record's attribute is not longer than maximum
