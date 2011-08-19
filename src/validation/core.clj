@@ -5,18 +5,18 @@
         validation.errors
         validation.predicates))
 
-(deferror *validation-error* [] [record]
+(deferror validation-error [] [record]
   {:msg (exception-message record)
    :unhandled (throw-msg IllegalArgumentException)})
 
 (defn validate
   "Validates the record by applying the validation-fn. The function
-  raises a *validation-error* if the record is invalid. If the record
+  raises a validation-error if the record is invalid. If the record
   is valid the function returns the record."
   [record validation-fn]
   (let [record (validation-fn record)]
     (if-not (valid? record)
-      (raise *validation-error* record)
+      (raise validation-error record)
       record)))
 
 (defn- confirmation-keyword

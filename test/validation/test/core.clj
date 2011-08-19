@@ -202,7 +202,7 @@
                (exception-message (validate-user invalid-user))))))
     (with-handler
       (validate invalid-user validate-user)
-      (handle *validation-error* [record]
+      (handle validation-error [record]
               (is (not (valid? record)))
               (is (= (error-messages record)
                      (error-messages (validate-user invalid-user))))))))
@@ -218,7 +218,7 @@
                (exception-message (validate-user invalid-user))))))
     (with-handler
       (validate-user! invalid-user)
-      (handle *validation-error* [record]
+      (handle validation-error [record]
               (is (not (valid? record)))
               (is (= (error-messages record)
                      (error-messages (validate-user invalid-user))))))))
