@@ -1,5 +1,6 @@
 (ns validation.errors
-  (:use [clojure.contrib.string :only (capitalize join replace-re)]))
+  (:refer-clojure :exclude (replace))
+  (:use [clojure.string :only (capitalize join replace)]))
 
 (defn error-messages
   "Returns all error messages of the record."
@@ -28,7 +29,7 @@
 
 (defn- format-error-message [attribute error-message]
   (if (and attribute error-message)
-    (str (capitalize (replace-re #"^:+" "" (str attribute))) " " error-message)))
+    (str (capitalize (replace (str attribute) #"^:+" "")) " " error-message)))
 
 (defn format-error-messages
   "Returns an array of formatted error messages."

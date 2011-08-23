@@ -1,5 +1,6 @@
 (ns validation.core
-  (:use [clojure.contrib.string :only (blank? join replace-re)]
+  (:refer-clojure :exclude (replace))
+  (:use [clojure.string :only (blank? join replace)]
         [clojure.contrib.error-kit :only (deferror throw-msg raise)]
         validation.errors
         validation.predicates))
@@ -20,7 +21,7 @@
 
 (defn- confirmation-keyword
   "Returns the keyword attribute used for confirmation."
-  [attribute] (keyword (replace-re #"^\:+" "" (str attribute "-confirmation"))))
+  [attribute] (keyword (replace (str attribute "-confirmation") #"^\:+" "")))
 
 (defn extract-value
   "Extract the validation attributes from record. Keywords are read
