@@ -1,6 +1,5 @@
 (ns validation.core
   (:use [clojure.contrib.string :only (blank? join replace-re)]
-        [clojure.contrib.seq :only (includes?)]
         [clojure.contrib.error-kit :only (deferror throw-msg raise)]
         validation.errors
         validation.predicates))
@@ -81,7 +80,7 @@
   "Validates that the record's attribute is not included in the
   sequence of values."
   [exlusions]
-  (not (includes? exlusions value))
+  (not (contains? (set exlusions) value))
   "is reserved.")
 
 (defvalidator format-of
@@ -94,7 +93,7 @@
   "Validates that the record's attribute is not included in the
   sequence of values."
   [inlusions]
-  (includes? inlusions value)
+  (contains? (set inlusions) value)
   "is not a valid option.")
 
 (defvalidator is-latitude

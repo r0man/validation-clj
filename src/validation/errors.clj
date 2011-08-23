@@ -1,6 +1,5 @@
 (ns validation.errors
-  (:use [clojure.contrib.seq :only (includes?)]
-        [clojure.contrib.string :only (capitalize join replace-re)]))
+  (:use [clojure.contrib.string :only (capitalize join replace-re)]))
 
 (defn error-messages
   "Returns all error messages of the record."
@@ -21,7 +20,7 @@
   "Add the error message for attribute to the record's list of error
   messages."
   [record attribute message]
-  (if-not (includes? (error-messages-on record attribute) message)
+  (if-not (contains? (set (error-messages-on record attribute)) message)
     (with-meta record
       (assoc-in (meta record) (flatten [:errors attribute])
                 (conj (or (error-messages-on record attribute) []) message)))
@@ -47,6 +46,6 @@
 
 (defn valid?
   "Returns true if the record is valid, otherwise false."
-  [record]  
+  [record]
   (let [errors (error-messages record)]
     (or (nil? errors) (empty? errors))))
