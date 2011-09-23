@@ -1,13 +1,11 @@
 (ns validation.core
   (:refer-clojure :exclude (replace))
   (:use [clojure.string :only (blank? join replace)]
-        [clojure.contrib.error-kit :only (deferror throw-msg raise)]
+        [slingshot.core :only [throw+]]
         validation.errors
         validation.predicates))
 
-(deferror validation-error [] [record]
-  {:msg (exception-message record)
-   :unhandled (throw-msg IllegalArgumentException)})
+(defrecord validation-error [record errors])
 
 (defn validate
   "Validates the record by applying the validation-fn. The function
@@ -16,10 +14,10 @@
   [record validation-fn]
   (let [record (validation-fn record)]
     (if-not (valid? record)
-      (raise validation-error record)
+      (throw+ (validation-error. record (meta record)))
       record)))
 
-(defn- confirmation-keyword
+(defn confirmation-keyword
   "Returns the keyword attribute used for confirmation."
   [attribute] (keyword (replace (str attribute "-confirmation") #"^\:+" "")))
 

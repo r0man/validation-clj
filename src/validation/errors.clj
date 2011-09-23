@@ -27,7 +27,7 @@
                 (conj (or (error-messages-on record attribute) []) message)))
     record))
 
-(defn- format-error-message [attribute error-message]
+(defn format-error-message [attribute error-message]
   (if (and attribute error-message)
     (str (capitalize (replace (str attribute) #"^:+" "")) " " error-message)))
 

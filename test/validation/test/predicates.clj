@@ -1,7 +1,6 @@
 (ns validation.test.predicates
-  (:use clojure.test validation.predicates validation.test))
-
-(refer-private 'validation.predicates)
+  (:use clojure.test
+        validation.predicates))
 
 (deftest test-email?
   (testing "valid email address"

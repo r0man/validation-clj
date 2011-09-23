@@ -1,9 +1,7 @@
-(ns validation.predicates
-  (:use [clojure.contrib.def :only (defvar-)]))
+(ns validation.predicates)
 
-(defvar- *email-regex*
-  #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
-  "The regualar expression used to validate email addresses.")
+(def ^:dynamic *email-regex*
+  #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
 
 (defn email?
   "Returns true if the email address is valid, otherwise false."

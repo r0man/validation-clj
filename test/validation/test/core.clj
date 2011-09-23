@@ -1,8 +1,8 @@
 (ns validation.test.core
-  (:use [clojure.contrib.error-kit :only (handle with-handler)]
-        clojure.test validation.core validation.errors validation.test))
-
-(refer-private 'validation.core)
+  (:use [slingshot.core :only [try+]]
+        clojure.test
+        validation.core
+        validation.errors))
 
 (defvalidate user
   (presence-of :nick)
@@ -13,7 +13,7 @@
   (presence-of :password)
   (confirmation-of :password))
 
-(def *valid-user*
+(def valid-user
   {:nick "bob"
    :email "bob@example.com"
    :password "secret"
@@ -197,37 +197,35 @@
            (error-messages ((is-location :location) {}))))))
 
 (deftest test-validate-user
-  (is (= (validate *valid-user* validate-user) *valid-user*))
-  (let [invalid-user (assoc *valid-user* :nick "" :email "bob")]
-    (is (thrown? IllegalArgumentException (validate invalid-user validate-user)))
+  (is (= (validate valid-user validate-user) valid-user))
+  (let [invalid-user (assoc valid-user :nick "" :email "bob")]
+    (is (thrown? slingshot.Stone (validate invalid-user validate-user)))
     (try
       (validate invalid-user validate-user)
-      (catch IllegalArgumentException e
-        (is (= (.getMessage e)
-               (exception-message (validate-user invalid-user))))))
-    (with-handler
-      (validate invalid-user validate-user)
-      (handle validation-error [record]
-              (is (not (valid? record)))
-              (is (= (error-messages record)
-                     (error-messages (validate-user invalid-user))))))))
+      (catch slingshot.Stone e
+        (is (re-matches #"Object thrown by throw\+ not caught in any try\+.*" (.getMessage e)))))
+    (try+
+     (validate invalid-user validate-user)
+     (catch validation.core.validation-error {record :record}
+       (is (not (valid? record)))
+       (is (= (error-messages record)
+              (error-messages (validate-user invalid-user))))))))
 
 (deftest test-validate-user!
-  (is (= (validate-user! *valid-user*) *valid-user*))
-  (let [invalid-user (assoc *valid-user* :nick "" :email "bob")]
-    (is (thrown? IllegalArgumentException (validate-user! invalid-user)))
+  (is (= (validate-user! valid-user) valid-user))
+  (let [invalid-user (assoc valid-user :nick "" :email "bob")]
+    (is (thrown? slingshot.Stone (validate-user! invalid-user)))
     (try
       (validate-user! invalid-user)
-      (catch IllegalArgumentException e
-        (is (= (.getMessage e)
-               (exception-message (validate-user invalid-user))))))
-    (with-handler
-      (validate-user! invalid-user)
-      (handle validation-error [record]
-              (is (not (valid? record)))
-              (is (= (error-messages record)
-                     (error-messages (validate-user invalid-user))))))))
+      (catch slingshot.Stone e
+        (is (re-matches #"Object thrown by throw\+ not caught in any try\+.*" (.getMessage e)))))
+    (try+
+     (validate-user! invalid-user)
+     (catch validation.core.validation-error {record :record}
+       (is (not (valid? record)))
+       (is (= (error-messages record)
+              (error-messages (validate-user invalid-user))))))))
 
 (deftest test-valid-user?
-  (is (valid-user? *valid-user*))
+  (is (valid-user? valid-user))
   (is (not (valid-user? {}))))
