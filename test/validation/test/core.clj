@@ -209,7 +209,8 @@
         (is (re-matches #"Object thrown by throw\+ not caught in any try\+.*" (.getMessage e)))))
     (try+
      (validate invalid-user validate-user)
-     (catch validation.core.validation-error {record :record}
+     (catch validation.core.validation-error {record :record errors :errors}
+       (is (= errors (:errors (meta record))))
        (is (not (valid? record)))
        (is (= (error-messages record)
               (error-messages (validate-user invalid-user))))))))
@@ -232,8 +233,9 @@
         (is (re-matches #"Object thrown by throw\+ not caught in any try\+.*" (.getMessage e)))))
     (try+
      (validate-user! invalid-user)
-     (catch validation.core.validation-error {record :record}
+     (catch validation.core.validation-error {record :record errors :errors}
        (is (not (valid? record)))
+       (is (= errors (:errors (meta record))))
        (is (= (error-messages record)
               (error-messages (validate-user invalid-user))))))))
 

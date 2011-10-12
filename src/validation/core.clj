@@ -14,7 +14,7 @@
   [record validation-fn]
   (let [record (validation-fn record)]
     (if-not (valid? record)
-      (throw+ (validation-error. record (meta record)))
+      (throw+ (validation-error. record (:errors (meta record))))
       record)))
 
 (defn confirmation-keyword
