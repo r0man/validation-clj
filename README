@@ -25,14 +25,17 @@ Use the validation library.
 Define a validation which generates the valid-user?, validate-user and
 validate-user! functions.
 
+  (defn new-user? [user]
+    (nil? (:id user)))
+
   (defvalidate user
     (presence-of :nick)
     (min-length-of :nick 2)
     (max-length-of :nick 16)
     (presence-of :email)
     (is-email :email)
-    (presence-of :password)
-    (confirmation-of :password))
+    (presence-of :password :if new-user?)
+    (confirmation-of :password :if new-user?))
 
 The valid-user? fn checks if the record is valid or not.
 
@@ -68,11 +71,12 @@ validated record.
 The validate-user! fn is similar to validate-user, but uses the
 error-kit condition system to signal validation errors.
 
-  (use 'clojure.contrib.error-kit)
+  (use 'slingshot.core)
 
-  (with-handler (validate-user! *alice*)
-    (handle validation-error [record]
-            (meta record)))
+  (try+
+    (validate-user! *alice*)
+    (catch validation.error {user :record errors :errors}
+      errors))
   ;=> {:email ["is not a valid email address." "can't be blank."]
   ;    :password ["can't be blank."]}
 
