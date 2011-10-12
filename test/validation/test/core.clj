@@ -17,7 +17,7 @@
   (presence-of :password :if new-user?)
   (confirmation-of :password :if new-user?))
 
-(def valid-user
+(def example-user
   {:nick "bob"
    :email "bob@example.com"
    :crypted-password "xxxx"
@@ -202,8 +202,8 @@
            (error-messages ((is-location :location) {}))))))
 
 (deftest test-validate-user
-  (is (= (validate valid-user validate-user) valid-user))
-  (let [invalid-user (assoc valid-user :nick "" :email "bob")]
+  (is (= (validate example-user validate-user) example-user))
+  (let [invalid-user (assoc example-user :nick "" :email "bob")]
     (is (thrown? slingshot.Stone (validate invalid-user validate-user)))
     (try
       (validate invalid-user validate-user)
@@ -219,15 +219,15 @@
 
 (deftest test-if-option
   (let [saved-user
-        (-> valid-user
+        (-> example-user
             (dissoc :password :password-confirmation)
-            (assoc :id 1)
+            (assoc :id 1 :crypted-password "xxxxx")
             (validate-user))]
     (is (valid? saved-user))))
 
 (deftest test-unless-option
   (let [user
-        (-> valid-user
+        (-> example-user
             (dissoc :crypted-password :password :password-confirmation)
             (assoc :id 1)
             (validate-user))]
@@ -235,8 +235,8 @@
     (is (= ["can't be blank."] (error-messages-on user :crypted-password)))))
 
 (deftest test-validate-user!
-  (is (= (validate-user! valid-user) valid-user))
-  (let [invalid-user (assoc valid-user :nick "" :email "bob")]
+  (is (= (validate-user! example-user) example-user))
+  (let [invalid-user (assoc example-user :nick "" :email "bob")]
     (is (thrown? slingshot.Stone (validate-user! invalid-user)))
     (try
       (validate-user! invalid-user)
@@ -251,5 +251,5 @@
               (error-messages (validate-user invalid-user))))))))
 
 (deftest test-valid-user?
-  (is (valid-user? valid-user))
+  (is (valid-user? example-user))
   (is (not (valid-user? {}))))
