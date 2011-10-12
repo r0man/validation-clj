@@ -32,12 +32,14 @@
    (fn? read-fn) (read-fn record)))
 
 (defmacro defvalidator [fn-name fn-doc args predicate-fn error-fn]
-  `(defn ~fn-name ~fn-doc [~'attribute ~@args]
+  `(defn ~fn-name ~fn-doc [~'attribute ~@args & {:as ~'options}]
      (fn [~'record]
        (let [~'value (extract-value ~'record ~'attribute)]
-         (if ~predicate-fn
-           ~'record
-           (add-error-message-on ~'record ~'attribute ~error-fn))))))
+         (if (or (nil? (:if ~'options)) ((:if ~'options) ~'record))
+           (if ~predicate-fn
+             ~'record
+             (add-error-message-on ~'record ~'attribute ~error-fn))
+           ~'record)))))
 
 (defmacro defvalidate [name & validations]
   (let [name# name validations# validations]

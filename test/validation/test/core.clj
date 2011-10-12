@@ -4,14 +4,17 @@
         validation.core
         validation.errors))
 
+(defn new-user? [user]
+  (nil? (:id user)))
+
 (defvalidate user
   (presence-of :nick)
   (min-length-of :nick 2)
   (max-length-of :nick 16)
   (presence-of :email)
   (is-email :email)
-  (presence-of :password)
-  (confirmation-of :password))
+  (presence-of :password :if new-user?)
+  (confirmation-of :password :if new-user?))
 
 (def valid-user
   {:nick "bob"
@@ -210,6 +213,14 @@
        (is (not (valid? record)))
        (is (= (error-messages record)
               (error-messages (validate-user invalid-user))))))))
+
+(deftest test-if-option
+  (let [saved-user
+        (-> valid-user
+            (dissoc :password :password-confirmation)
+            (assoc :id 1 :crypted-password "xxxxx")
+            (validate-user))]
+    (is (valid? saved-user))))
 
 (deftest test-validate-user!
   (is (= (validate-user! valid-user) valid-user))
