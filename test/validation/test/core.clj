@@ -13,12 +13,14 @@
   (max-length-of :nick 16)
   (presence-of :email)
   (is-email :email)
+  (presence-of :crypted-password :unless new-user?)
   (presence-of :password :if new-user?)
   (confirmation-of :password :if new-user?))
 
 (def valid-user
   {:nick "bob"
    :email "bob@example.com"
+   :crypted-password "xxxx"
    :password "secret"
    :password-confirmation "secret"})
 
@@ -219,9 +221,18 @@
   (let [saved-user
         (-> valid-user
             (dissoc :password :password-confirmation)
-            (assoc :id 1 :crypted-password "xxxxx")
+            (assoc :id 1)
             (validate-user))]
     (is (valid? saved-user))))
+
+(deftest test-unless-option
+  (let [user
+        (-> valid-user
+            (dissoc :crypted-password :password :password-confirmation)
+            (assoc :id 1)
+            (validate-user))]
+    (is (not (valid? user)))
+    (is (= ["can't be blank."] (error-messages-on user :crypted-password)))))
 
 (deftest test-validate-user!
   (is (= (validate-user! valid-user) valid-user))

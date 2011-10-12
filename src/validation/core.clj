@@ -34,7 +34,8 @@
   `(defn ~fn-name ~fn-doc [~'attribute ~@args & {:as ~'options}]
      (fn [~'record]
        (let [~'value (extract-value ~'record ~'attribute)]
-         (if (or (nil? (:if ~'options)) ((:if ~'options) ~'record))
+         (if (and (or (nil? (:if ~'options)) ((:if ~'options) ~'record))
+                  (or (nil? (:unless ~'options)) (not ((:unless ~'options) ~'record))))
            (if ~predicate-fn
              ~'record
              (add-error-message-on ~'record ~'attribute ~error-fn))
