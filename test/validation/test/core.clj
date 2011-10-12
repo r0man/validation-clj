@@ -17,12 +17,11 @@
   (presence-of :password :if new-user?)
   (confirmation-of :password :if new-user?))
 
-(def example-user
-  {:nick "bob"
+(def saved-user
+  {:id 1
+   :nick "bob"
    :email "bob@example.com"
-   :crypted-password "xxxx"
-   :password "secret"
-   :password-confirmation "secret"})
+   :crypted-password "xxxx"})
 
 (deftest test-extract-value
   (is (= "bob" (extract-value {:nick "bob"} :nick)))
@@ -202,8 +201,8 @@
            (error-messages ((is-location :location) {}))))))
 
 (deftest test-validate-user
-  (is (= (validate example-user validate-user) example-user))
-  (let [invalid-user (assoc example-user :nick "" :email "bob")]
+  (is (= (validate saved-user validate-user) saved-user))
+  (let [invalid-user (assoc saved-user :nick "" :email "bob")]
     (is (thrown? slingshot.Stone (validate invalid-user validate-user)))
     (try
       (validate invalid-user validate-user)
@@ -218,16 +217,16 @@
               (error-messages (validate-user invalid-user))))))))
 
 (deftest test-if-option
-  (let [saved-user
-        (-> example-user
+  (let [user
+        (-> saved-user
             (dissoc :password :password-confirmation)
             (assoc :id 1 :crypted-password "xxxxx")
             (validate-user))]
-    (is (valid? saved-user))))
+    (is (valid? user))))
 
 (deftest test-unless-option
   (let [user
-        (-> example-user
+        (-> saved-user
             (dissoc :crypted-password :password :password-confirmation)
             (assoc :id 1)
             (validate-user))]
@@ -235,8 +234,8 @@
     (is (= ["can't be blank."] (error-messages-on user :crypted-password)))))
 
 (deftest test-validate-user!
-  (is (= (validate-user! example-user) example-user))
-  (let [invalid-user (assoc example-user :nick "" :email "bob")]
+  (is (= (validate-user! saved-user) saved-user))
+  (let [invalid-user (assoc saved-user :nick "" :email "bob")]
     (is (thrown? slingshot.Stone (validate-user! invalid-user)))
     (try
       (validate-user! invalid-user)
@@ -251,5 +250,5 @@
               (error-messages (validate-user invalid-user))))))))
 
 (deftest test-valid-user?
-  (is (valid-user? example-user))
+  (is (valid-user? saved-user))
   (is (not (valid-user? {}))))
