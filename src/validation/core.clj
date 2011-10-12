@@ -1,20 +1,19 @@
 (ns validation.core
   (:refer-clojure :exclude (replace))
+  (:require validation)
   (:use [clojure.string :only (blank? join replace)]
         [slingshot.core :only [throw+]]
         validation.errors
         validation.predicates))
 
-(defrecord validation-error [record errors])
-
 (defn validate
   "Validates the record by applying the validation-fn. The function
-  raises a validation-error if the record is invalid. If the record
+  raises a error if the record is invalid. If the record
   is valid the function returns the record."
   [record validation-fn]
   (let [record (validation-fn record)]
     (if-not (valid? record)
-      (throw+ (validation-error. record (:errors (meta record))))
+      (throw+ (validation.error. record (:errors (meta record))))
       record)))
 
 (defn confirmation-keyword
