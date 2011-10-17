@@ -207,7 +207,7 @@
     (try
       (validate invalid-user validate-user)
       (catch slingshot.Stone e
-        (is (re-matches #"Object thrown by throw\+ not caught in any try\+.*" (.getMessage e)))))
+        (is (re-matches #"Object thrown by throw\+.*" (.getMessage e)))))
     (try+
      (validate invalid-user validate-user)
      (catch validation.error {record :record errors :errors}
@@ -240,7 +240,7 @@
     (try
       (validate-user! invalid-user)
       (catch slingshot.Stone e
-        (is (re-matches #"Object thrown by throw\+ not caught in any try\+.*" (.getMessage e)))))
+        (is (re-matches #"Object thrown by throw\+.*" (.getMessage e)))))
     (try+
      (validate-user! invalid-user)
      (catch validation.error {record :record errors :errors}
