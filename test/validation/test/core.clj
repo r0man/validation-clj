@@ -1,5 +1,5 @@
 (ns validation.test.core
-  (:use [slingshot.core :only [try+]]
+  (:use [slingshot.slingshot :only [try+]]
         clojure.test
         validation.core
         validation.errors))

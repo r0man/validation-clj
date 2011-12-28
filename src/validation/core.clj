@@ -2,7 +2,7 @@
   (:refer-clojure :exclude (replace))
   (:require validation)
   (:use [clojure.string :only (blank? join replace)]
-        [slingshot.core :only [throw+]]
+        [slingshot.slingshot :only [throw+]]
         validation.errors
         validation.predicates))
 
