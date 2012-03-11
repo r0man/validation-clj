@@ -203,11 +203,7 @@
 (deftest test-validate-user
   (is (= (validate saved-user validate-user) saved-user))
   (let [invalid-user (assoc saved-user :nick "" :email "bob")]
-    (is (thrown? slingshot.Stone (validate invalid-user validate-user)))
-    (try
-      (validate invalid-user validate-user)
-      (catch slingshot.Stone e
-        (is (re-matches #"Object thrown by throw\+.*" (.getMessage e)))))
+    (is (thrown? clojure.lang.ExceptionInfo (validate invalid-user validate-user)))
     (try+
      (validate invalid-user validate-user)
      (catch validation.error {record :record errors :errors}
@@ -236,11 +232,7 @@
 (deftest test-validate-user!
   (is (= (validate-user! saved-user) saved-user))
   (let [invalid-user (assoc saved-user :nick "" :email "bob")]
-    (is (thrown? slingshot.Stone (validate-user! invalid-user)))
-    (try
-      (validate-user! invalid-user)
-      (catch slingshot.Stone e
-        (is (re-matches #"Object thrown by throw\+.*" (.getMessage e)))))
+    (is (thrown? clojure.lang.ExceptionInfo (validate-user! invalid-user)))
     (try+
      (validate-user! invalid-user)
      (catch validation.error {record :record errors :errors}
