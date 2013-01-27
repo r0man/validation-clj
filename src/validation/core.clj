@@ -204,14 +204,14 @@
   "Validates that the record's attribute is not longer than maximum
   number of characters."
   [maximum]
-  (<= (count value) maximum)
+  (<= (count (str value)) maximum)
   (format "is too long (maximum is %d characters)." maximum))
 
 (defvalidator min-length-of
   "Validates that the record's attribute is at least minimum number of
 characters."
   [minimum]
-  (>= (count value) minimum)
+  (>= (count (str value)) minimum)
   (format "is too short (minimum is %d characters)." minimum))
 
 (defvalidator presence-of
