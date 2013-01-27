@@ -1,6 +1,5 @@
 (ns validation.core
   (:refer-clojure :exclude [replace])
-  (:require validation)
   (:require [clojure.string :refer [blank? join replace capitalize]]
             [slingshot.slingshot :refer [throw+]]
             [sqlingvo.core :refer [select from limit run1 where]]))
@@ -91,7 +90,7 @@
   [record validation-fn]
   (let [record (validation-fn record)]
     (if-not (valid? record)
-      (throw+ (validation.error. record (:errors (meta record))))
+      (throw+ {:type ::error :record record :errors (:errors (meta record))})
       record)))
 
 (defn confirmation-keyword

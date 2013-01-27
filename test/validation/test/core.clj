@@ -280,7 +280,7 @@
     (is (thrown? clojure.lang.ExceptionInfo (validate invalid-user validate-user)))
     (try+
      (validate invalid-user validate-user)
-     (catch validation.error {record :record errors :errors}
+     (catch [:type :validation.core/error] {:keys [errors record]}
        (is (= errors (:errors (meta record))))
        (is (not (valid? record)))
        (is (= (error-messages record)
@@ -309,7 +309,7 @@
     (is (thrown? clojure.lang.ExceptionInfo (validate-user! invalid-user)))
     (try+
      (validate-user! invalid-user)
-     (catch validation.error {record :record errors :errors}
+     (catch [:type :validation.core/error] {:keys [errors record]}
        (is (not (valid? record)))
        (is (= errors (:errors (meta record))))
        (is (= (error-messages record)
