@@ -9,7 +9,7 @@
 
 (defn email?
   "Returns true if the email address is valid, otherwise false."
-  [address] (and address (re-matches *email-regex* address)))
+  [address] (and address (re-matches *email-regex* (str address))))
 
 (defn latitude?
   "Returns true if number is betweeen -90.0 and 90.0, otherwise
@@ -216,10 +216,7 @@ characters."
 
 (defvalidator presence-of
   "Validates that the record's attribute is not blank."
-  []
-  (if (isa? (class value) String)
-    (not (blank? value))
-    (not (nil? value)))
+  [] (not (blank? (str value)))
   "can't be blank.")
 
 (defn new-record? [record]
