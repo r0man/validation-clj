@@ -2,7 +2,8 @@
   (:refer-clojure :exclude [replace])
   (:require validation)
   (:require [clojure.string :refer [blank? join replace capitalize]]
-            [slingshot.slingshot :refer [throw+]]))
+            [slingshot.slingshot :refer [throw+]]
+            [sqlingvo.core :refer [select from limit run1 where]]))
 
 (def ^:dynamic *email-regex*
   #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
@@ -221,3 +222,27 @@ characters."
     (not (blank? value))
     (not (nil? value)))
   "can't be blank.")
+
+(defn new-record? [record]
+  (blank? (str (:id record))))
+
+(defn uniqueness-of
+  "Validates that the record's attributes are unique."
+  [table columns & {:keys [error] :as opts}]
+  (fn [record]
+    (let [error (or error "has already been taken")
+          columns (if (sequential? columns) columns [columns])
+          vals (map record columns)
+          condition `(and ~@(map (fn [c v] `(= ~c ~v)) columns vals))]
+      (if (and (or (nil? (:if opts))
+                   ((:if opts) record))
+               (run1 (select columns
+                       (from table)
+                       (where condition)
+                       (limit 1))))
+        (reduce
+         (fn [record column]
+           (with-meta record
+             (assoc-in (meta record) [:errors column] error)))
+         record columns)
+        record))))
