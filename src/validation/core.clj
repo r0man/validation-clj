@@ -151,7 +151,7 @@
   "Validates that the record's attribute is exactly length characters
   long."
   [length]
-  (= (count value) length)
+  (= (count (str value)) length)
   (format "has the wrong length (should be %d characters)." length))
 
 (defvalidator exclusion-of
@@ -164,7 +164,7 @@
 (defvalidator format-of
   "Validates that the record's attribute matches the pattern."
   [pattern]
-  (and value (re-matches pattern value))
+  (and value (re-matches pattern (str value)))
   "is invalid.")
 
 (defvalidator inclusion-of
