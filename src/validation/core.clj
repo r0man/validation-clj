@@ -224,7 +224,7 @@ characters."
 
 (defn uniqueness-of
   "Validates that the record's attributes are unique."
-  [table columns & {:keys [error] :as opts}]
+  [db table columns & {:keys [error] :as opts}]
   (fn [record]
     (let [error (or error "has already been taken")
           columns (if (sequential? columns) columns [columns])
@@ -232,10 +232,10 @@ characters."
           condition `(and ~@(map (fn [c v] `(= ~c ~v)) columns vals))]
       (if (and (or (nil? (:if opts))
                    ((:if opts) record))
-               (run1 (select columns
-                       (from table)
-                       (where condition)
-                       (limit 1))))
+               (run1 db (select columns
+                          (from table)
+                          (where condition)
+                          (limit 1))))
         (reduce
          (fn [record column]
            (with-meta record

@@ -367,9 +367,9 @@
          {:latitude 90.1 :longitude 0})))
 
 (deftest test-uniqueness-of
-  (with-redefs [run1 (fn [stmt]
+  (with-redefs [run1 (fn [db stmt]
                        (is (= ["SELECT nick FROM users WHERE (nick = ?) LIMIT 1" "Bob"]
                               (sql stmt)))
                        [])]
-    (let [errors (:errors (meta ((uniqueness-of :users :nick) {:nick "Bob"})))]
+    (let [errors (:errors (meta ((uniqueness-of nil :users :nick) {:nick "Bob"})))]
       (is (= "has already been taken" (:nick errors))))))
