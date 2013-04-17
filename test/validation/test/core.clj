@@ -1,6 +1,7 @@
 (ns validation.test.core
   (:use [slingshot.slingshot :only [try+]]
-        [sqlingvo.core :only [run1 sql]]
+        [datumbazo.core :only [run1]]
+        [sqlingvo.core :only [sql]]
         clojure.test
         validation.core))
 

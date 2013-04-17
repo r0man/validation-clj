@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [replace])
   (:require [clojure.string :refer [blank? join replace capitalize]]
             [slingshot.slingshot :refer [throw+]]
-            [sqlingvo.core :refer [select from limit run1 where]]))
+            [datumbazo.core :refer [select from limit run1 where]]))
 
 (def ^:dynamic *email-regex*
   #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")

@@ -6,4 +6,4 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [slingshot "0.10.3"]
-                 [sqlingvo "0.4.0-SNAPSHOT"]])
+                 [datumbazo "0.4.1-SNAPSHOT"]])
