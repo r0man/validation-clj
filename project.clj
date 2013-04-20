@@ -7,4 +7,4 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [slingshot "0.10.3"]
                  [datumbazo "0.4.1-SNAPSHOT"]
-                 [geo-clj "0.2.2-SNAPSHOT"]])
+                 [geo-clj "0.2.2"]])
