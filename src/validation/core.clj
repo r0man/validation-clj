@@ -1,8 +1,10 @@
 (ns validation.core
   (:refer-clojure :exclude [replace])
   (:require [clojure.string :refer [blank? join replace capitalize]]
-            [slingshot.slingshot :refer [throw+]]
-            [datumbazo.core :refer [select from limit run1 where]]))
+            [datumbazo.core :refer [select from limit run1 where]]
+            [geo.core :refer [latitude? longitude? point point? point-x point-y point]]
+            [slingshot.slingshot :refer [throw+]])
+  (:import geo.core.IPoint))
 
 (def ^:dynamic *email-regex*
   #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
@@ -10,29 +12,6 @@
 (defn email?
   "Returns true if the email address is valid, otherwise false."
   [address] (and address (re-matches *email-regex* (str address))))
-
-(defn latitude?
-  "Returns true if number is betweeen -90.0 and 90.0, otherwise
-  false."
-  [number]
-  (and (number? number)
-       (>= number -90.0)
-       (<= number 90.0)))
-
-(defn longitude?
-  "Returns true if number is between -180.0 and 180.0, otherwise
-  false."
-  [number]
-  (and (number? number)
-       (>= number -180.0)
-       (<= number 180.0)))
-
-(defn location?
-  "Returns true if location has valid latitude and longitude
-  coordinates, otherwise false."
-  [location & {:keys [latitude longitude]}]
-  (and (latitude? ((or latitude :latitude) location))
-       (longitude? ((or longitude :longitude) location))))
 
 (defn error-messages
   "Returns all error messages of the record."
@@ -174,31 +153,34 @@
   (contains? (set inlusions) value)
   "is not a valid option.")
 
-(defvalidator is-latitude
+(defvalidator latitude
   "Validates that the record's attribute is between -90.0 and 90."
   []
   (latitude? value)
   "must be between -90.0 and 90.0.")
 
-(defvalidator is-longitude
+(defvalidator longitude
   "Validates that the record's attribute is between -90.0 and 90."
   []
   (longitude? value)
   "must be between -180.0 and 180.0.")
 
-(defn is-location
+(defn location
   "Validates that the record's attribute is a valid location."
-  [attribute & {:keys [latitude longitude]}]
-  (let [latitude (or latitude :latitude) longitude (or longitude :longitude)]
-    (fn [record]
-      (let [record (or record {})]
-        (if-let [errors (-> (or (extract-value record attribute) {})
-                            ((is-latitude latitude))
-                            ((is-longitude longitude))
-                            meta :errors)]
-          (with-meta record
-            (assoc-in (meta record) [:errors attribute] errors))
-          record)))))
+  [attribute & {:as opts}]
+  (fn [record]
+    (reduce
+     (fn [record validation-fn]
+       (if-let [errors (validation-fn (get record attribute))]
+         (add-error-message-on record attribute errors)
+         record))
+     record
+     [#(if (not (point? %1))
+         "is not a location")
+      #(if (and (point? %1) (not (longitude? (point-x %1))))
+         "longitude must be between -180.0 and 180.0.")
+      #(if (and (point? %1) (not (latitude? (point-y %1))))
+         "latitude must be between -90.0 and 90.0.")])))
 
 (defvalidator max-length-of
   "Validates that the record's attribute is not longer than maximum
