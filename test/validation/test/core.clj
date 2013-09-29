@@ -358,7 +358,7 @@
 
 (deftest test-uniqueness-of
   (with-redefs [run1 (fn [db stmt]
-                       (is (= ["SELECT nick FROM users WHERE (nick = ?) LIMIT 1" "Bob"]
+                       (is (= ["SELECT \"nick\" FROM \"users\" WHERE (\"nick\" = ?) LIMIT 1" "Bob"]
                               (sql stmt)))
                        [])]
     (let [errors (:errors (meta ((uniqueness-of nil :users :nick) {:nick "Bob"})))]
