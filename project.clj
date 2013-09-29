@@ -1,4 +1,4 @@
-(defproject validation-clj "0.5.4"
+(defproject validation-clj "0.5.5-SNAPSHOT"
   :description "A validation library for Clojure."
   :min-lein-version "2.0.0"
   :url "http://github.com/r0man/validation-clj"
