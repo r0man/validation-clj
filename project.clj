@@ -7,5 +7,4 @@
   :lein-release {:deploy-via :clojars}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [slingshot "0.10.3"]
-                 [datumbazo "0.5.6"]
                  [geo-clj "0.3.2"]])

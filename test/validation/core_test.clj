@@ -1,9 +1,7 @@
-(ns validation.test.core
+(ns validation.core-test
   (:require [clojure.test :refer :all]
-            [datumbazo.core :refer [run1]]
             [geo.core :refer [point]]
             [slingshot.slingshot :refer [try+]]
-            [sqlingvo.core :refer [sql]]
             [validation.core :refer :all]))
 
 (defn new-user? [user]
@@ -355,11 +353,3 @@
     (are [address]
       (is (not (email? address)))
       nil "" "root" "@localhost" "root@localhost" "domain.com" "@domain.com")))
-
-(deftest test-uniqueness-of
-  (with-redefs [run1 (fn [db stmt]
-                       (is (= ["SELECT \"nick\" FROM \"users\" WHERE (\"nick\" = ?) LIMIT 1" "Bob"]
-                              (sql stmt)))
-                       [])]
-    (let [errors (:errors (meta ((uniqueness-of nil :users :nick) {:nick "Bob"})))]
-      (is (= "has already been taken" (:nick errors))))))
