@@ -10,7 +10,7 @@
 
 (defn email?
   "Returns true if the email address is valid, otherwise false."
-  [address] (and address (re-matches *email-regex* (str address))))
+  [address] (boolean (and address (re-matches *email-regex* (str address)))))
 
 (defn error-messages
   "Returns all error messages of the record."
